@@ -94,12 +94,6 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
 .relit{cursor:pointer;color:#cfe3ff;border-bottom:1px dashed rgba(99,140,255,.4);padding:0 1px}
 .relit:hover{color:#fde68a;border-bottom-color:#fde68a}
 .relarrow{margin:0 4px}
-/* ===== 提示条 ===== */
-#hint{
-  position:absolute;left:12px;bottom:12px;background:rgba(16,31,51,.92);
-  border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:11.5px;
-  color:var(--dim);max-width:420px;line-height:1.7;z-index:10;
-}
 #toast{
   position:absolute;left:50%;top:16px;transform:translateX(-50%);
   background:#7f1d1d;border:1px solid #b91c1c;color:#fecaca;border-radius:6px;
@@ -199,7 +193,6 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <span class="close" id="detailClose">&times;</span>
       <div id="detailBody"></div>
     </div>
-    <div id="hint">记不住 → 词族骨架按语素归类；没体系 → 主题地图按学科定位；读不懂搭配 → 点击词看搭配例句。</div>
   </main>
 </div>
 <div id="toast"></div>
