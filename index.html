@@ -80,6 +80,21 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
 .cand-item b{color:#e9d5ff;font-weight:600}
 .cand-item .n{color:#7d6ba1;font-size:10.5px;font-variant-numeric:tabular-nums;flex:none}
 .cand-item .mk{color:#c084fc;margin-right:3px}
+/* ===== 学习路径 ===== */
+.path-list{display:flex;flex-direction:column;gap:2px;max-height:240px;overflow-y:auto;margin-top:6px}
+.path-item{display:flex;align-items:center;gap:6px;padding:3px 7px;font-size:12px;border-radius:4px;cursor:pointer;border:1px solid transparent}
+.path-item:hover{background:var(--panel2);border-color:var(--line)}
+.path-item .no{color:#47607d;font-size:10.5px;flex:none;font-variant-numeric:tabular-nums;width:20px}
+.path-item b{color:#dbe7f5;font-weight:600}
+.path-item .meta{margin-left:auto;color:#47607d;font-size:10.5px;flex:none}
+.path-item .arr{color:var(--cyan);flex:none;font-size:11px}
+.path-empty{color:#47607d;font-size:11.5px;padding:6px 2px}
+/* ===== 推荐学习区块 ===== */
+.recsec{margin:8px 0;font-size:12px;line-height:2;color:var(--text)}
+.recit{cursor:pointer;color:#e9d5ff;border-bottom:1px dashed rgba(192,132,252,.4);padding:0 1px}
+.recit:hover{color:#fde68a;border-bottom-color:#fde68a}
+.recwhy{color:#7d6ba1;font-size:10.5px;margin-left:4px}
+.reclab{display:inline-block;border:1px solid #c084fc;color:#c084fc;border-radius:3px;padding:0 4px;font-size:10px;margin-right:2px}
 /* ===== 详情面板 ===== */
 #detail{
   position:absolute;top:12px;right:12px;width:300px;max-height:calc(100% - 24px);
@@ -196,6 +211,13 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
     <div class="sec">
       <h3>课文筛选</h3>
       <select id="lessonSel"><option value="全部">全部课文</option></select>
+    </div>
+    <div class="sec">
+      <h3>学习路径（教师备课）</h3>
+      <select id="pathLesson"></select>
+      <div class="row"><button id="pathBtn" style="width:100%">生成该课学习路径</button></div>
+      <div id="pathList" class="path-list"></div>
+      <div class="note" style="margin-top:6px">按“图谱连接度”排出建议学习序（枢纽词先学）；点击词语定位并查看其推荐学习。</div>
     </div>
     <div class="sec">
       <h3>关系类型说明</h3>
@@ -547,6 +569,7 @@ function showDetail(w, withRel){
     html += `</div>`;
   }
   if(withRel) html += relBlockHtml(w);
+  html += recBlockHtml(w);   // 推荐学习（学完 w → 建议学），恒显示
   document.getElementById('detailBody').innerHTML = html;
   document.getElementById('detail').classList.add('open');
 }
@@ -690,11 +713,66 @@ function bindSearch(){
     hideSuggest();
   });
   kw.addEventListener('blur', () => setTimeout(hideSuggest, 150));
-  // 关系清单点击 → 定位到该词（重新以该词为中心展开星型）
+  // 关系清单/推荐学习条目点击 → 定位到该词（重新以该词为中心展开星型）
   document.getElementById('detail').addEventListener('click', e => {
-    const it = e.target.closest('.relit');
+    const it = e.target.closest('.relit, .recit');
     if(it && it.dataset.w) focusWord(it.dataset.w);
   });
+}
+
+/* ================= 推荐学习（学完 A → 建议学 B） ================= */
+function recFor(w){
+  const ev = new Map();   // B -> {types:Set, str, freq}
+  for(const f of DATA.families){
+    if(!f.w.includes(w)) continue;
+    const byFreq = f.w.slice().sort((a,b) => ((wordIndex.get(b)||[])[5]||0) - ((wordIndex.get(a)||[])[5]||0));
+    for(const m of byFreq){
+      if(m === w) continue;
+      let e = ev.get(m) || {types:new Set(), str:0, freq:0};
+      e.types.add('词族');
+      e.str = Math.max(e.str, 0.6);
+      e.freq = (wordIndex.get(m)||[])[5]||0;
+      ev.set(m, e);
+    }
+  }
+  for(const c of DATA.collocations){
+    const [type, w1, w2, freq] = c;
+    const other = w1 === w ? w2 : (w2 === w ? w1 : null);
+    if(!other) continue;
+    let e = ev.get(other) || {types:new Set(), str:0, freq:0};
+    e.types.add('搭配·' + type);
+    e.str = Math.max(e.str, Math.min(5, 0.8 + freq * 0.12));
+    e.freq = (wordIndex.get(other)||[])[5]||0;
+    ev.set(other, e);
+  }
+  for(const c of DATA.cooccurrences){
+    const [w1, w2, fq] = c;
+    const other = w1 === w ? w2 : (w2 === w ? w1 : null);
+    if(!other) continue;
+    let e = ev.get(other) || {types:new Set(), str:0, freq:0};
+    e.types.add('共现');
+    e.str = Math.max(e.str, Math.min(4, 0.5 + fq * 0.2));
+    e.freq = (wordIndex.get(other)||[])[5]||0;
+    ev.set(other, e);
+  }
+  const arr = [...ev.entries()].map(([b, e]) => ({w:b, n:e.types.size, str:e.str, types:[...e.types], freq:e.freq||0}));
+  arr.sort((a,b) => b.n - a.n || b.str - a.str || b.freq - a.freq);
+  return arr.slice(0, 5);
+}
+function recBlockHtml(w){
+  const recs = recFor(w);
+  let h = `<div class="relblock"><h3>推荐学习 <span class="dimhint">（学完「${escapeHtml(w)}」→ 建议学，点击定位）</span></h3>`;
+  if(!recs.length){
+    h += `<div style="color:var(--dim);font-size:12px">该词暂无推荐依据（无词族/搭配/共现关联）</div></div>`;
+    return h;
+  }
+  for(const r of recs){
+    const why = r.types.map(t => `<span class="reclab">${escapeHtml(t)}</span>`).join('');
+    h += `<div class="recsec"><span class="recit" data-w="${escapeHtml(r.w)}">${escapeHtml(r.w)}</span>` +
+         `<span class="recwhy">${why}</span><span class="recwhy" style="color:#47607d">${r.freq}次</span></div>`;
+  }
+  h += '</div>';
+  return h;
 }
 
 /* ================= 构词候选面板 ================= */
@@ -754,6 +832,48 @@ function bindCandPanel(){
   document.getElementById('candList').addEventListener('click', e => {
     const it = e.target.closest('.cand-item');
     if(it) focusCandidate(it.dataset.form, it.dataset.pos);
+  });
+}
+
+/* ================= 学习路径（教师备课）：按课排出建议学习序 ================= */
+function pathForLesson(lesson){
+  const ws = [];
+  for(const rec of DATA.words){
+    if(rec[9].includes(lesson) && !isFunc(rec[0])) ws.push(rec);
+  }
+  const score = w => {
+    let s = 0;
+    for(const f of DATA.families){ if(f.w.includes(w)) s += f.w.length; }
+    for(const c of DATA.collocations){ if(c[1]===w || c[2]===w) s += 1; }
+    for(const c of DATA.cooccurrences){ if(c[0]===w || c[1]===w) s += 0.5; }
+    return s;
+  };
+  ws.sort((a,b) => score(b[0]) - score(a[0]) || b[5] - a[5]);
+  return ws.slice(0, 30).map(rec => ({w:rec[0], freq:rec[5], sc:score(rec[0])}));
+}
+function renderPath(){
+  const list = document.getElementById('pathList');
+  const lesson = document.getElementById('pathLesson').value;
+  if(!lesson || lesson === '全部'){ list.innerHTML = '<div class="path-empty">请先选择课文，再点“生成该课学习路径”</div>'; return; }
+  const path = pathForLesson(lesson);
+  if(!path.length){ list.innerHTML = '<div class="path-empty">该课文暂无词表记录</div>'; return; }
+  list.innerHTML = path.map((p, i) => {
+    const next = i < path.length - 1 ? `<span class="arr">→ ${escapeHtml(path[i+1].w)}</span>` : '';
+    return `<div class="path-item" data-w="${escapeHtml(p.w)}"><span class="no">${i+1}</span><b>${escapeHtml(p.w)}</b>` +
+           `<span class="meta">${p.sc}关联 · ${p.freq}次</span>${next}</div>`;
+  }).join('');
+}
+function bindPath(){
+  const sel = document.getElementById('pathLesson');
+  Object.keys(DATA.lessonTheme).sort().forEach(l => {
+    const o = document.createElement('option');
+    o.value = l; o.textContent = l;
+    sel.appendChild(o);
+  });
+  document.getElementById('pathBtn').addEventListener('click', renderPath);
+  document.getElementById('pathList').addEventListener('click', e => {
+    const it = e.target.closest('.path-item');
+    if(it && it.dataset.w) focusWord(it.dataset.w);
   });
 }
 
@@ -851,6 +971,7 @@ function init(){
   bindChartClick();
   renderCandList();
   bindCandPanel();
+  bindPath();
   render();
   window.addEventListener('resize', () => chart.resize());
 }
