@@ -24,17 +24,22 @@ function cilinBlock(w) {
   const {groups,all,shown}=cilinSelection(w);
   let h='<div class="relblock"><h3>词林语义关联</h3>';
   if(!cilinIndex.has(w)) return h+'<p class="note">该词未匹配到本轮词林数据。</p></div>';
-  h+=`<div class="note">按完整词段匹配；同词性筛选采用教材主词性。当前找到 ${all.length} 个关联词，显示 ${shown.length} 个。紫色为同义候选，青色为同类相关。</div>`;
+  h+=`<div class="note">依据《同义词词林（扩展版）》的词段组织；同词性筛选采用教材主词性。当前找到 ${all.length} 个关联词，显示 ${shown.length} 个。紫色为词林同义词群，青色为同类相关。</div>`;
   if(!all.length) h+='<p class="relsec">当前筛选下暂无关联词，可切换类别或取消“同词性”。</p>';
+  if(groups.length){
+    h+='<details class="cilin-source"><summary>词林来源与完整词群</summary>';
+    for(const g of groups) h+=`<div class="relsec"><b>${escapeHtml(g.code)}</b>（${g.marker==='='?'同义词段':'同类词段'}）<br>网站已收录成员：${escapeHtml(g.members.join('、'))}</div>`;
+    h+='</details>';
+  }
   for(const [other,gs] of shown) {
     const r=wordIndex.get(other), syn=gs.some(g=>g.marker==='=');
     h+=`<div class="cilin-item"><div><button class="relit" data-w="${escapeHtml(other)}">${escapeHtml(other)}</button> <span class="tag">${escapeHtml(POS_CN[r[2]]||r[2])} · ${r[5]}次</span></div>`;
-    h+=`<div class="cilin-type" style="color:${syn?'#c4b5fd':'#5eead4'}">${syn?'词林同义候选':'词林同类相关'}</div>`;
-    h+=`<details><summary>比较教材例句与词段依据</summary><div class="sent"><small>教材例句（v10）</small><br><b>${escapeHtml(w)}</b>：${escapeHtml(cilinExample(w).sentence)}<br><small>${escapeHtml(cilinExample(w).source)}</small></div><div class="sent"><small>教材例句（v10）</small><br><b>${escapeHtml(other)}</b>：${escapeHtml(cilinExample(other).sentence)}<br><small>${escapeHtml(cilinExample(other).source)}</small></div>`;
-    for(const g of gs) h+=`<div class="relsec">${escapeHtml(g.code)}（${g.marker==='='?'同义词段':'同类词段'}）<br>教材内成员：${escapeHtml(g.members.join('、'))}</div>`;
+    h+=`<div class="cilin-type" style="color:${syn?'#c4b5fd':'#5eead4'}">${syn?'词林同义词群':'词林同类相关'}</div>`;
+    h+=`<details><summary>查看双方教材用例</summary><div class="sent"><small>教材例句（v10）</small><br><b>${escapeHtml(w)}</b>：${escapeHtml(cilinExample(w).sentence)}<br><small>${escapeHtml(cilinExample(w).source)}</small></div><div class="sent"><small>教材例句（v10）</small><br><b>${escapeHtml(other)}</b>：${escapeHtml(cilinExample(other).sentence)}<br><small>${escapeHtml(cilinExample(other).source)}</small></div>`;
+
     h+='</details></div>';
   }
-  h+='<p class="cilin-foot">来源：《同义词词林（扩展版）》公开镜像。关联按词段记录，是否适用于当前教材语境需结合例句判断。词林不提供本页中文释义或反义关系。</p></div>';
+  h+='<p class="cilin-foot">关系来源：《同义词词林（扩展版）》。“=”表示原资源的同义词段，“#”表示同类相关词段。教材用例用于观察使用差异。</p></div>';
   return h;
 }
 const originalShowDetail=showDetail;
@@ -65,7 +70,7 @@ buildGraph=function(width,height){
     });
   }
   for(const [peer,gs] of selected.shown){
-    const syn=gs.some(g=>g.marker==='='), label=syn?'词林同义候选':'同类相关';
+    const syn=gs.some(g=>g.marker==='='), label=syn?'词林同义词群':'同类相关';
     graph.edges.push({source:'w:'+w,target:'w:'+peer,symbol:['none','none'],
       cilinRelation:{word:w,peer,groups:gs},edgeLabel:label,
       lineStyle:{color:syn?'#a78bfa':'#2dd4bf',width:2.5,type:syn?'solid':'dashed',curveness:semanticOnly?0:.18},

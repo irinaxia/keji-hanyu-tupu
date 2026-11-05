@@ -175,12 +175,12 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
   <div class="stats" id="stats"></div>
 </header>
 <div class="layout">
-  <aside><div class="sec"><h3>词林语义关联</h3><p class="note">查词后查看同义候选与同类相关；点击关联词继续探索。</p>
+  <aside><div class="sec"><h3>词林语义关联</h3><p class="note">按外部词汇资源浏览同义词群与同类相关词，点击词项查看教材用例。</p>
 <div class="row"><select id="cilinView"><option value="semantic">语义关联视图</option><option value="combined" selected>综合关联视图</option></select></div>
-<div class="row"><select id="cilinKind"><option value="=">同义候选</option><option value="#">同类相关</option><option value="all">两类都看</option></select></div>
+<div class="row"><select id="cilinKind"><option value="=">词林同义词群</option><option value="#">同类相关</option><option value="all">两类都看</option></select></div>
 <label class="chk"><input type="checkbox" id="cilinPOS" checked>仅看相同教材主词性</label>
 <div class="row"><span>关联词数量</span><select id="cilinLimit"><option>8</option><option>16</option><option>32</option></select></div>
-<div class="cilin-examples"><button data-cilin-example="温度">温度</button><button data-cilin-example="研究">研究</button><button data-cilin-example="计算">计算</button><button data-cilin-example="增加">增加</button><button data-cilin-example="减少">减少</button><button data-cilin-example="表示">表示</button></div><p class="cilin-foot">紫色：词林同义候选；青色虚线：同类相关。原有学习推荐继续保留。</p></div>
+<div class="cilin-examples"><button data-cilin-example="温度">温度</button><button data-cilin-example="研究">研究</button><button data-cilin-example="计算">计算</button><button data-cilin-example="增加">增加</button><button data-cilin-example="减少">减少</button><button data-cilin-example="表示">表示</button></div><p class="cilin-foot">紫色：词林词林同义词群；青色虚线：同类相关。原有学习推荐继续保留。</p></div>
     <div class="sec">
       <h3>图层开关（可组合）</h3>
       <label class="chk"><input type="checkbox" id="lyFam" checked><span class="sw" style="background:var(--amber)"></span>词族骨架</label>
@@ -573,7 +573,6 @@ function showDetail(w, withRel){
     }
     html += `</div>`;
   }
-  if(withRel) html += relBlockHtml(w);
   html += recBlockHtml(w);   // 推荐学习（学完 w → 建议学），恒显示
   document.getElementById('detailBody').innerHTML = html;
   document.getElementById('detail').classList.add('open');
