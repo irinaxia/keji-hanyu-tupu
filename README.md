@@ -1,0 +1,977 @@
+[index.html](https://github.com/user-attachments/files/34541225/index.html)
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>科技汉语词汇知识图谱（正式v10）</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230b1626'/%3E%3Ccircle cx='16' cy='8' r='4' fill='%2322d3ee'/%3E%3Ccircle cx='8' cy='23' r='3.5' fill='%23f5a623'/%3E%3Ccircle cx='25' cy='22' r='3.5' fill='%234f8ef7'/%3E%3Cpath d='M16 12 9 20M16 12l8 9' stroke='%238aa3bd' stroke-width='1.5'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0b1626; --panel:#101f33; --panel2:#152a44; --line:#1e3a5c;
+  --text:#dbe7f5; --dim:#8aa3bd; --cyan:#22d3ee; --blue:#4f8ef7;
+  --amber:#f5a623; --orange:#fb923c; --teal:#2dd4bf; --red:#f87171;
+  --green:#34d399; --sky:#60a5fa; --yellow:#facc15;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+/* ===== 顶栏 ===== */
+header{
+  padding:10px 18px 8px; border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#0e2038 0%,var(--bg) 100%);
+}
+.title-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{font-size:18px;font-weight:700;letter-spacing:1px;color:#eaf4ff}
+.sub{font-size:12px;color:var(--dim)}
+.stats{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.stat{
+  background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  padding:4px 12px;font-size:12px;color:var(--dim);
+}
+.stat b{color:var(--cyan);font-size:14px;margin-right:4px;font-variant-numeric:tabular-nums}
+/* ===== 主体布局 ===== */
+.layout{flex:1;display:flex;min-height:0}
+aside{
+  width:264px;flex:none;background:var(--panel);border-right:1px solid var(--line);
+  padding:12px;overflow-y:auto;font-size:13px;
+}
+main{flex:1;position:relative;min-width:0;overflow:hidden}
+#chart{position:absolute;inset:0}
+/* ===== 控件 ===== */
+.sec{margin-bottom:14px}
+.sec h3{
+  font-size:12px;color:var(--cyan);font-weight:600;margin-bottom:8px;
+  letter-spacing:1px;border-bottom:1px dashed var(--line);padding-bottom:4px;
+}
+.chk{display:flex;align-items:center;gap:7px;padding:4px 2px;cursor:pointer;user-select:none}
+.chk input{accent-color:var(--cyan);width:15px;height:15px;cursor:pointer}
+.chk .sw{width:10px;height:10px;border-radius:2px;flex:none}
+.row{display:flex;align-items:center;gap:8px;margin:6px 0}
+input[type=range]{flex:1;accent-color:var(--amber)}
+select{
+  width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:5px;padding:5px 6px;font-size:12px;
+}
+button{
+  background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:5px;padding:5px 10px;font-size:12px;cursor:pointer;
+}
+button:hover{border-color:var(--cyan);color:var(--cyan)}
+.val{color:var(--amber);font-weight:700;min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.legend-line{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);padding:2.5px 0}
+.legend-line i{width:22px;height:0;border-top:2.5px solid;flex:none}
+.legend-line .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.legend-line .sq{width:11px;height:11px;border-radius:3px;flex:none}
+.note{font-size:11.5px;color:var(--dim);line-height:1.6;background:var(--panel2);border-radius:6px;padding:8px 10px}
+/* ===== 构词候选面板 ===== */
+.cand-tabs{display:flex;gap:6px;margin-bottom:6px}
+.cand-tab{flex:1;padding:5px 0;font-size:11.5px;border:1px solid var(--line);border-radius:5px;
+  background:var(--panel2);color:var(--dim);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cand-tab:hover{border-color:var(--cyan);color:var(--cyan)}
+.cand-tab.on{background:#2a1a4a;border-color:#c084fc;color:#e9d5ff}
+.cand-list{max-height:212px;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+.cand-item{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 7px;
+  font-size:12px;border-radius:4px;cursor:pointer;border:1px solid transparent}
+.cand-item:hover{background:var(--panel2);border-color:var(--line)}
+.cand-item b{color:#e9d5ff;font-weight:600}
+.cand-item .n{color:#7d6ba1;font-size:10.5px;font-variant-numeric:tabular-nums;flex:none}
+.cand-item .mk{color:#c084fc;margin-right:3px}
+/* ===== 学习路径 ===== */
+.path-list{display:flex;flex-direction:column;gap:2px;max-height:240px;overflow-y:auto;margin-top:6px}
+.path-item{display:flex;align-items:center;gap:6px;padding:3px 7px;font-size:12px;border-radius:4px;cursor:pointer;border:1px solid transparent}
+.path-item:hover{background:var(--panel2);border-color:var(--line)}
+.path-item .no{color:#47607d;font-size:10.5px;flex:none;font-variant-numeric:tabular-nums;width:20px}
+.path-item b{color:#dbe7f5;font-weight:600}
+.path-item .meta{margin-left:auto;color:#47607d;font-size:10.5px;flex:none}
+.path-item .arr{color:var(--cyan);flex:none;font-size:11px}
+.path-empty{color:#47607d;font-size:11.5px;padding:6px 2px}
+/* ===== 推荐学习区块 ===== */
+.recsec{margin:8px 0;font-size:12px;line-height:2;color:var(--text)}
+.recit{cursor:pointer;color:#e9d5ff;border-bottom:1px dashed rgba(192,132,252,.4);padding:0 1px}
+.recit:hover{color:#fde68a;border-bottom-color:#fde68a}
+.recwhy{color:#7d6ba1;font-size:10.5px;margin-left:4px}
+.reclab{display:inline-block;border:1px solid #c084fc;color:#c084fc;border-radius:3px;padding:0 4px;font-size:10px;margin-right:2px}
+/* ===== 详情面板 ===== */
+#detail{
+  position:absolute;top:12px;right:12px;width:300px;max-height:calc(100% - 24px);
+  background:rgba(16,31,51,.97);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);padding:16px;overflow-y:auto;
+  transform:translateX(340px);transition:transform .25s ease;z-index:20;
+}
+#detail.open{transform:translateX(0)}
+#detail .close{position:absolute;top:8px;right:10px;cursor:pointer;color:var(--dim);font-size:16px}
+#detail h2{font-size:22px;color:#fff;display:flex;align-items:baseline;gap:8px}
+#detail h2 .py{font-size:13px;color:var(--cyan);font-weight:400}
+.tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:4px;
+  padding:1px 7px;font-size:11px;color:var(--dim);margin:2px 4px 2px 0}
+.kv{margin-top:10px;font-size:12.5px;line-height:1.7}
+.kv b{color:var(--amber);font-weight:600}
+.kv .body{color:var(--text)}
+.sent{background:var(--panel2);border-left:3px solid var(--cyan);border-radius:0 5px 5px 0;
+  padding:6px 9px;font-size:12px;color:var(--dim);margin-top:6px;line-height:1.6}
+/* ===== 关系搭配区块（检索星型清单） ===== */
+.relblock{margin-top:14px;border-top:1px dashed var(--line);padding-top:10px}
+.relblock h3{font-size:12px;color:var(--cyan);font-weight:600;letter-spacing:1px;margin-bottom:8px}
+.dimhint{color:#47607d;font-weight:400;letter-spacing:0}
+.relsec{margin:8px 0;font-size:12px;line-height:1.95;color:var(--text)}
+.relsec-tag{display:inline-block;border:1px solid;border-radius:4px;padding:0 6px;font-size:10.5px;margin-right:6px;vertical-align:1px}
+.relit{cursor:pointer;color:#cfe3ff;border-bottom:1px dashed rgba(99,140,255,.4);padding:0 1px}
+.relit:hover{color:#fde68a;border-bottom-color:#fde68a}
+.relarrow{margin:0 4px}
+/* ===== 提示条 ===== */
+#hint{
+  position:absolute;left:12px;bottom:12px;background:rgba(16,31,51,.92);
+  border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:11.5px;
+  color:var(--dim);max-width:420px;line-height:1.7;z-index:10;
+}
+#toast{
+  position:absolute;left:50%;top:16px;transform:translateX(-50%);
+  background:#7f1d1d;border:1px solid #b91c1c;color:#fecaca;border-radius:6px;
+  padding:8px 16px;font-size:13px;z-index:50;display:none;
+}
+/* ===== 词汇检索 ===== */
+.search-row{display:flex;gap:8px;align-items:center;margin:10px 0 6px}
+.search-box{position:relative;flex:1;max-width:540px}
+#kwSearch{width:100%;box-sizing:border-box;padding:8px 36px 8px 12px;border-radius:8px;
+  border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13.5px;
+  outline:none;transition:border-color .15s}
+#kwSearch:focus{border-color:var(--cyan)}
+#kwSearch::placeholder{color:#47607d}
+#kwClear{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;
+  color:var(--dim);font-size:17px;line-height:1;cursor:pointer;display:none;padding:0 4px}
+#kwClear:hover{color:var(--amber)}
+.suggest{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;max-height:320px;overflow-y:auto;display:none;
+  box-shadow:0 10px 28px rgba(0,0,0,.5);z-index:60}
+.suggest .it{padding:7px 12px;cursor:pointer;display:flex;gap:9px;align-items:baseline}
+.suggest .it:hover,.suggest .it.sel{background:var(--panel2)}
+.suggest .it b{color:var(--text);font-size:13.5px}
+.suggest .it .py{color:var(--dim);font-size:11.5px}
+.suggest .it .meta{margin-left:auto;color:#47607d;font-size:11px;flex:none}
+.suggest .none{padding:9px 12px;color:#47607d;font-size:12px}
+@media (max-width:860px){
+  .layout{flex-direction:column}
+  aside{width:100%;max-height:38%;border-right:none;border-bottom:1px solid var(--line)}
+}
+</style>
+<style>#detail{width:410px;transform:translateX(460px)}#detail.open{transform:translateX(0)}.cilin-item{padding:12px 0;border-bottom:1px solid #29415e}.cilin-item button{font-size:16px;color:#ddd6fe}.cilin-type{font-size:12px;margin:5px 0}.cilin-item summary{cursor:pointer;font-size:12px;color:#9eafc6;margin:8px 0}.cilin-foot{font-size:11px;color:#8aa3bd;line-height:1.65;margin-top:9px}.cilin-examples{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}#detail .sent{color:#d5e2f2}#detail small{color:#8aa3bd}@media(max-width:850px){#detail{width:min(410px,85vw)}}</style></head>
+<body>
+<header>
+  <div class="title-row">
+    <h1>科技汉语词汇知识图谱</h1>
+    <span class="sub">正式v10 · 24部教材 · 971篇课文 · 19,795词 · 38类学科</span>
+  </div>
+  <div class="search-row">
+    <div class="search-box">
+      <input id="kwSearch" type="text" placeholder="输入词语或拼音，如：电流 / dianliu" autocomplete="off" spellcheck="false">
+      <button id="kwClear" title="清除并恢复视图">×</button>
+      <div id="kwSuggest" class="suggest"></div>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+</header>
+<div class="layout">
+  <aside><div class="sec"><h3>词林语义关联</h3><p class="note">浏览词林来源关联。已有辨析说明的词对会在词条中单独显示。</p>
+<div class="row"><select id="cilinView"><option value="semantic">语义关联视图</option><option value="combined" selected>综合关联视图</option></select></div>
+<div class="row"><select id="cilinKind"><option value="=">词林同义词段</option><option value="#">词林同类词段</option><option value="all">两类都看</option></select></div>
+<label class="chk"><input type="checkbox" id="cilinPOS" checked>仅看相同教材主词性</label>
+<div class="row"><span>关联词数量</span><select id="cilinLimit"><option>8</option><option>16</option><option>32</option></select></div>
+<div class="cilin-examples"><button data-cilin-example="温度">温度</button><button data-cilin-example="研究">研究</button><button data-cilin-example="计算">计算</button><button data-cilin-example="增加">增加</button><button data-cilin-example="减少">减少</button><button data-cilin-example="表示">表示</button></div><p class="cilin-foot">紫色：词林同义词群；青色虚线：同类相关。原有学习推荐继续保留。</p></div>
+    <div class="sec">
+      <h3>图层开关（可组合）</h3>
+      <label class="chk"><input type="checkbox" id="lyFam" checked><span class="sw" style="background:var(--amber)"></span>词族骨架</label>
+      <label class="chk"><input type="checkbox" id="lyTheme" checked><span class="sw" style="background:var(--cyan)"></span>主题地图</label>
+      <label class="chk"><input type="checkbox" id="lyCol"><span class="sw" style="background:var(--orange)"></span>搭配增强</label>
+      <label class="chk"><input type="checkbox" id="lyCo"><span class="sw" style="background:#64748b"></span>共现增强</label>
+      <label class="chk"><input type="checkbox" id="lyCand" checked><span class="sw" style="background:#c084fc"></span>构词候选</label>
+    </div>
+    <div class="sec">
+      <h3>构词候选（60 项 · 人工观察）</h3>
+      <div class="cand-tabs">
+        <button class="cand-tab on" id="candTabFront">共同词首（前位 30）</button>
+        <button class="cand-tab" id="candTabBack">共同词尾（后位 30）</button>
+      </div>
+      <div class="cand-list" id="candList"></div>
+      <div class="note" style="margin-top:6px">点击候选语素 → 图中展开该词族并显示观察卡；候选≠词缀，仅供扩大观察范围。</div>
+    </div>
+    <div class="sec">
+      <h3>显示控制</h3>
+      <label class="chk"><input type="checkbox" id="edgeLabel">显示关系边标签</label>
+      <label class="chk"><input type="checkbox" id="showAll">显示全部词（含功能词）</label>
+      <div class="row">
+        <span style="font-size:12px;color:var(--dim)">词频≥</span>
+        <input type="range" id="minFreq" min="1" max="200" value="30">
+        <span class="val" id="minFreqVal">30</span>
+      </div>
+      <div class="row"><button id="resetBtn">重置视图</button></div>
+    </div>
+    <div class="sec">
+      <h3>主题筛选</h3>
+      <div id="themeFilter"></div>
+    </div>
+    <div class="sec">
+      <h3>课文筛选</h3>
+      <select id="lessonSel"><option value="全部">全部课文</option></select>
+    </div>
+    <div class="sec">
+      <h3>学习路径（教师备课）</h3>
+      <select id="pathLesson"></select>
+      <div class="row"><button id="pathBtn" style="width:100%">生成该课学习路径</button></div>
+      <div id="pathList" class="path-list"></div>
+      <div class="note" style="margin-top:6px">按“图谱连接度”排出建议学习序（枢纽词先学）；点击词语定位并查看其推荐学习。</div>
+    </div>
+    <div class="sec">
+      <h3>关系类型说明</h3>
+      <div class="legend-line"><span class="dot" style="background:var(--amber)"></span>词形组节点：共享词首或词尾形式</div>
+      <div class="legend-line"><span class="sq" style="background:var(--cyan)"></span>主题节点：学科主题及其核心词</div>
+      <div class="legend-line"><span class="dot" style="background:var(--blue)"></span>词节点：大小 = 出现频次</div>
+      <div class="legend-line"><i style="border-color:rgba(79,142,247,.45)"></i>词形边：形式组 → 成员词</div>
+      <div class="legend-line"><i style="border-color:rgba(34,211,238,.5)"></i>主题边：主题 → 核心词</div>
+      <div class="legend-line"><i style="border-color:var(--orange)"></i>搭配·动宾：动词 → 宾语（强关系）</div>
+      <div class="legend-line"><i style="border-color:var(--teal)"></i>搭配·述补：谓词 → 补语</div>
+      <div class="legend-line"><i style="border-color:var(--red)"></i>搭配·量名：量词 → 名词</div>
+      <div class="legend-line"><i style="border-color:var(--green)"></i>搭配·主谓：名词 → 动词（陈述主干）</div>
+      <div class="legend-line"><i style="border-color:var(--sky)"></i>搭配·定中：修饰成分 → 中心名词</div>
+      <div class="legend-line"><i style="border-color:var(--yellow)"></i>搭配·状中：副词/形容词 → 动词/形容词</div>
+      <div class="legend-line"><i style="border-color:rgba(100,116,139,.55)"></i>共现边：前词 → 后词（句内相邻）</div>
+      <div class="legend-line"><span class="dot" style="background:#c084fc"></span>◆ 构词候选：60 项共同词首/词尾形式（人工观察，非词缀）</div>
+    </div>
+    <div class="sec note">
+      操作：拖拽节点可移位；滚轮缩放；拖拽空白平移。点击<b style="color:var(--amber)">词族节点</b>展开/收起成员词；点击<b style="color:var(--cyan)">主题节点</b>切换该主题筛选；点击<b style="color:var(--blue)">词节点</b>查看详情（释义、出处、例句）。
+    </div>
+  </aside>
+  <main>
+    <div id="chart"></div>
+    <div id="detail">
+      <span class="close" id="detailClose">&times;</span>
+      <div id="detailBody"></div>
+    </div>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ================= 内联数据（来自 数据/ 目录，全量替换见方法说明） ================= */
+</script>
+<script src="v10-data.js?v=v10-20261105"></script>
+<script>
+
+
+/* ================= 基础索引与状态 ================= */
+const wordIndex = new Map();
+DATA.words.forEach(r => wordIndex.set(r[0], r));
+
+const FUNC_POS = new Set(['u','h','k','uj','c','p','r','f','d','q','ul','uz','uv','e','o','an','heo']);
+const STOP = new Set(['的','了','是','在','和','与','中','上','下','不','就','都','如果','或','那么',
+  '所以','它','这','那','为','把','被','从','向','对','于','叫','叫做','一个','个','们','也','还',
+  '又','很','最','更','之','其','等','着','过','可以','用','时','有','即','则','虽','却','并',
+  '且','而','及','把','将','让','使','向','往','由','沿','按','照','据','通过','根据','对于','关于']);
+const POS_CN = {"a": "形容词", "b": "区别词", "c": "连词", "d": "副词", "e": "叹词", "h": "前缀（原标注类别）", "i": "成语或惯用语", "j": "简称", "k": "后缀（原标注类别）", "m": "数词", "n": "普通名词", "nd": "方位名词", "nh": "人名", "ni": "机构名", "nl": "处所名词", "ns": "地名", "nt": "时间名词", "nz": "其他专名", "p": "介词", "q": "量词", "r": "代词", "u": "助词", "v": "动词", "ws": "外文字符串"};
+
+const state = {
+  lyFam:true, lyTheme:true, lyCol:false, lyCo:false, lyCand:true,
+  edgeLabel:false, showAll:false, minFreq:30,
+  themes:new Set(Object.keys(DATA.themeTags)),
+  lesson:'全部', collapsedFams:new Set(),
+  temp:new Set(),   // 词汇检索临时加入的词（目标词+1度邻居）
+  focus:null,       // 检索星型模式：{word, nodes:Set}（目标词+直接关联词）
+};
+
+/* ===== 构词候选索引：[位置|形式] → [位置, 形式, 词种数, 代表词形串, 观察方向] ===== */
+const CAND = new Map();
+DATA.candidates.forEach(c => CAND.set(c[0] + '|' + c[1], c));
+
+function isFunc(w){
+  const r = wordIndex.get(w);
+  if(!r) return true;
+  return FUNC_POS.has(r[2]) || STOP.has(w);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+/* ================= 筛选 ================= */
+function visibleWords(){
+  // 检索星型模式：仅显示 目标词+直接关联词，不受词频/主题/课文筛选限制
+  if(state.focus){
+    const out = new Set([state.focus.word]);
+    state.focus.nodes.forEach(w => out.add(w));
+    return out;
+  }
+  const out = new Set();
+  for(const rec of DATA.words){
+    if(rec[5] < state.minFreq) continue;
+    if(!state.showAll && isFunc(rec[0])) continue;
+    if(state.themes.size){
+      const ts = rec[6].split('；').filter(Boolean);
+      if(!ts.some(t => state.themes.has(t))) continue;
+    }
+    if(state.lesson !== '全部' && !(DATA.wordLessons[rec[0]]||[]).includes(state.lesson)) continue;
+    out.add(rec[0]);
+  }
+  for(const w of (state.temp||new Set())) out.add(w);   // 检索临时词强制可见
+  return out;
+}
+
+/* ================= 构建图数据 ================= */
+const C = {
+  word:'#4f8ef7', fam:'#f5a623', theme:'#22d3ee',
+  famEdge:'rgba(79,142,247,.40)', themeEdge:'rgba(34,211,238,.45)',
+  dongbin:'#fb923c', shubu:'#2dd4bf', liangming:'#f87171', zhuwei:'#34d399',
+  dingzhong:'#60a5fa', zhuangzhong:'#facc15', otherCol:'#94a3b8', coEdge:'rgba(100,116,139,.30)',
+};
+
+function sizeOf(freq){ return 6 + Math.sqrt(freq) * 2.4; }
+
+function buildGraph(chartW, chartH){
+  const vis = visibleWords();
+  const nodes = [], edges = [];
+
+  /* --- 词节点 --- */
+  const isFocus = !!state.focus;
+  for(const w of vis){
+    const rec = wordIndex.get(w);
+    const isF = isFocus && state.focus.word === w;
+    const hubFixed = isF && chartW ? {fixed:true, x:chartW/2, y:chartH/2} : {};   // 目标词固定圆心
+    nodes.push({
+      id:'w:'+w, name:w, category:0,
+      symbolSize: isF ? sizeOf(rec[5])*1.45 : sizeOf(rec[5]) * (isFocus ? 0.92 : 1),
+      wordData:rec,
+      opacity: isFocus && !isF ? 0.55 : 1,
+      ...hubFixed,
+      itemStyle: isF ? {color:C.word, borderColor:'#facc15', borderWidth:3, shadowBlur:18, shadowColor:'rgba(250,204,21,.6)'}
+                     : {color:C.word, borderColor:'rgba(147,197,253,.8)', borderWidth:1, shadowBlur:8, shadowColor:'rgba(79,142,247,.4)'},
+      label: isF ? {show:true, fontSize:17, color:'#fde68a', fontWeight:'bold'}
+                 : isFocus ? {show:true, fontSize:12, color:'#b9d2ee'}
+                           : {show: rec[5] >= 12, fontSize: rec[5]>=30?13:11, color:'#dbeafe', fontWeight: rec[5]>=30?'bold':'normal'},
+    });
+  }
+
+  /* --- 词族骨架层（检索星型模式强制显示） --- */
+  if(state.lyFam || isFocus){
+    DATA.families.forEach((f, i) => {
+      const collapsed = !isFocus && state.collapsedFams.has(i);
+      const members = f.w.filter(m => vis.has(m) && !collapsed);
+      if(members.length < 2) return;   // 单成员词族不显示，避免噪声
+      const candInfo = state.lyCand ? CAND.get(f.p + '|' + f.m) : null;   // 构词候选标记
+      nodes.push({
+        id:'f:'+i, name:f.n, category:1,
+        symbolSize: Math.min(34, 16 + members.length*1.1),
+        familyIndex:i, cand:candInfo,
+        opacity: isFocus ? 0.6 : 1,
+        itemStyle: candInfo
+          ? {color: collapsed ? 'rgba(192,132,252,.3)' : C.fam,
+             borderColor:'#c084fc', borderWidth:2, borderType:'solid',
+             shadowBlur:14, shadowColor:'rgba(192,132,252,.55)'}
+          : {color: collapsed ? 'rgba(245,166,35,.35)' : C.fam,
+             borderColor:'#fde68a', borderWidth:1, borderType:'dashed',
+             shadowBlur:10, shadowColor:'rgba(245,166,35,.35)'},
+        label:{show:true, fontSize:11, color: candInfo ? '#e9d5ff' : '#fde68a', fontWeight:'bold',
+               formatter: candInfo ? (p) => '◆' + p.name : f.n},
+      });
+      for(const m of members){
+        edges.push({source:'f:'+i, target:'w:'+m,
+          lineStyle:{color:C.famEdge, width:isFocus?1.4:1, curveness:.05},
+          edgeLabel: f.m,
+          label: isFocus ? {show:true, formatter: f.m, fontSize:9, color:'#fde68a'} : undefined});
+      }
+    });
+  }
+
+  /* --- 主题地图层（检索星型模式隐藏，保持子图纯净） --- */
+  if(state.lyTheme && !isFocus){
+    for(const t of Object.keys(DATA.themeTags)){
+      if(!state.themes.has(t)) continue;
+      const core = (DATA.themeCore[t]||[]).filter(x => vis.has(x[0]));
+      if(!core.length) continue;
+      nodes.push({
+        id:'t:'+t, name:t, category:2, symbol:'roundRect', symbolSize:34,
+        themeName:t,
+        itemStyle:{color:C.theme, borderColor:'#a5f3fc', borderWidth:1, shadowBlur:12, shadowColor:'rgba(34,211,238,.45)'},
+        label:{show:true, fontSize:12, color:'#0b1626', fontWeight:'bold'},
+      });
+      for(const [w] of core){
+        edges.push({source:'t:'+t, target:'w:'+w,
+          lineStyle:{color:C.themeEdge, width:1, curveness:.05},
+          edgeLabel: t});
+      }
+    }
+  }
+
+  /* --- 搭配增强层（检索星型模式强制显示，边按 6 类分色） --- */
+  if(state.lyCol || isFocus){
+    for(const c of DATA.collocations){
+      const [type, w1, w2, freq, sent, lesson] = c;
+      if(!vis.has(w1) || !vis.has(w2)) continue;
+      const CMap = {'动宾':C.dongbin,'述补':C.shubu,'量名':C.liangming,
+                    '主谓':C.zhuwei,'定中':C.dingzhong,'状中':C.zhuangzhong};
+      const color = CMap[type] || C.otherCol;
+      edges.push({source:'w:'+w1, target:'w:'+w2,
+        symbol:['none','arrow'], symbolSize:[0,8],
+        lineStyle:{color:color, width: Math.min(5, 1.2 + freq*0.35), curveness:.15, opacity:.9, type:c[6]==='已编制例证'?'solid':'dashed'},
+        edgeLabel: type, sent:sent, lesson:lesson, status:c[6],
+        label: isFocus ? {show:true, formatter: type, fontSize:10, color: color} : undefined});
+    }
+  }
+
+  /* --- 共现增强层（检索星型模式强制显示） --- */
+  if(state.lyCo || isFocus){
+    for(const c of DATA.cooccurrences){
+      const [w1, w2, freq, pmi, lesson, sent] = c;
+      if(!vis.has(w1) || !vis.has(w2)) continue;
+      edges.push({source:'w:'+w1, target:'w:'+w2,
+        lineStyle:{color:C.coEdge, width:isFocus?1.2:.6, curveness:.12},
+        edgeLabel:'有向共现'+freq, sent:sent, lesson:lesson, frequency:freq, textbook_count:c[7], lesson_count:c[3], symbol:['none','arrow'], symbolSize:[0,6],
+        label: isFocus ? {show:true, formatter:'共现', fontSize:9, color:'#94a3b8'} : undefined});
+    }
+  }
+  return {nodes, edges};
+}
+
+/* ================= 渲染 ================= */
+let chart = null;
+function render(){
+  const {nodes, edges} = buildGraph(chart.getWidth(), chart.getHeight());
+  chart.setOption({
+    tooltip:{
+      backgroundColor:'rgba(16,31,51,.95)', borderColor:'#1e3a5c', textStyle:{color:'#dbe7f5', fontSize:12},
+      formatter:p => {
+        if(p.dataType === 'node'){
+          const d = p.data;
+          if(d.wordData){
+            const r = d.wordData;
+            return `<b>${escapeHtml(r[0])}</b> <span style="color:#22d3ee">${escapeHtml(r[1])}</span><br>
+              词性：${POS_CN[r[2]]||r[2]}　频次：${r[5]}<br>
+              <span style="color:#8aa3bd">点击查看详情</span>`;
+          }
+          if(d.familyIndex !== undefined){
+            const tip = d.cand ? `<br><span style="color:#c084fc">◆ 构词候选（人工观察 · 非词缀）</span>` : '';
+            return `<b style="color:#fde68a">${escapeHtml(d.name)}</b>${tip}<br><span style="color:#8aa3bd">点击展开/收起成员词</span>`;
+          }
+          return `<b style="color:#0b1626">${escapeHtml(d.name)}</b><br><span style="color:#8aa3bd">学科主题 · 点击筛选</span>`;
+        }
+        if(p.dataType === 'edge'){
+          const d = p.data;
+          return (d.sent ? `${escapeHtml(d.edgeLabel||'')}：${escapeHtml((d.sent||'').slice(0,60))}…` : escapeHtml(d.edgeLabel||''));
+        }
+        return '';
+      }
+    },
+    series:[{
+      id:'vocabGraph', type:'graph',
+      layout: state.focus ? (document.getElementById('cilinView').value==='semantic'?'none':'circular') : 'force',
+      roam:true, draggable:true,
+      categories:[{name:'词'},{name:'词族'},{name:'主题'}],
+      circular: state.focus ? {rotateLabel:true} : undefined,
+      force: state.focus ? undefined
+                          : {repulsion: nodes.length > 450 ? 200 : 110,
+                             gravity: .06, edgeLength:[25, 90], friction:.25, initLayout:'circular'},
+      emphasis:{
+        label:{show:true, fontSize:15, color:'#fde68a', fontWeight:'bold'},
+        itemStyle:{borderColor:'#facc15', borderWidth:4, shadowBlur:20, shadowColor:'rgba(250,204,21,.6)'},
+        scale:1.35,
+      },
+      data:nodes, links:edges,
+      lineStyle:{curveness:.1},
+      label:{show:false},
+    }]
+  }, true);
+  updateStats(nodes.length, edges.length);
+}
+
+function updateStats(n, e){
+  document.getElementById('stats').innerHTML =
+    `<span class="stat"><b>${DATA.words.length}</b>收录词</span>` +
+    `<span class="stat"><b>${DATA.families.length}</b>词形组</span>` +
+    `<span class="stat"><b>${DATA.collocations.length}</b>搭配例证/候选</span>` +
+    `<span class="stat"><b>${DATA.cooccurrences.length}</b>有向共现边</span>` +
+    `<span class="stat"><b style="color:#c084fc">${DATA.candidates.length}</b>构词候选</span>` +
+    `<span class="stat">当前显示 <b style="color:var(--amber)">${n}</b> 节点 / <b style="color:var(--amber)">${e}</b> 边</span>`;
+}
+
+/* ================= 详情面板 ================= */
+const COLLO_TYPE_COLOR = {'动宾':C.dongbin,'述补':C.shubu,'量名':C.liangming,'主谓':C.zhuwei,'定中':C.dingzhong,'状中':C.zhuangzhong};
+function collectRelations(w){
+  const rel = { colloc:[], family:null, familyMembers:[], cooc:[] };
+  for(const c of DATA.collocations){
+    if(c[1]===w || c[2]===w) rel.colloc.push([c[0], c[1], c[2], c[6]]);
+  }
+  for(const f of DATA.families){
+    if(f.w.includes(w)){ rel.family = f; break; }
+  }
+  if(rel.family){
+    rel.familyMembers = rel.family.w.slice()
+      .sort((a,b) => ((wordIndex.get(b)||[])[5]||0) - ((wordIndex.get(a)||[])[5]||0));
+  }
+  for(const c of DATA.cooccurrences){
+    if(rel.cooc.length >= 5) break;
+    if(c[0]===w) rel.cooc.push([c[1], c[2]]);
+    if(rel.cooc.length < 5 && c[1]===w) rel.cooc.push([c[0], c[2]]);
+  }
+  return rel;
+}
+function relBlockHtml(w){
+  const rel = collectRelations(w);
+  const empty = !rel.colloc.length && !rel.family && !rel.cooc.length;
+  let h = `<div class="relblock"><h3>关系搭配 <span class="dimhint">（点击条目定位）</span></h3>`;
+  if(empty){ h += `<div style="color:var(--dim);font-size:12px">该词暂无搭配/词族/共现记录</div>`; h += '</div>'; return h; }
+  if(rel.colloc.length){
+    for(const t of ['动宾','述补','量名','主谓','定中','状中']){
+      const pairs = rel.colloc.filter(p => p[0]===t);
+      if(!pairs.length) continue;
+      const col = COLLO_TYPE_COLOR[t];
+      h += `<div class="relsec"><span class="relsec-tag" style="border-color:${col};color:${col}">${t}</span>`;
+      h += pairs.map(([tp, a, b, status]) =>
+        `<span class="relit" data-w="${escapeHtml(a)}">${escapeHtml(a)}</span><span class="relarrow" style="color:${col}">→</span><span class="relit" data-w="${escapeHtml(b)}">${escapeHtml(b)}</span><small style="color:var(--dim)">（${escapeHtml(status||'候选')}）</small>`).join('　');
+      h += `</div>`;
+    }
+  }
+  if(rel.family){
+    h += `<div class="relsec"><span class="relsec-tag" style="border-color:${C.fam};color:#fde68a">词族</span><b>${escapeHtml(rel.family.n)}</b>：`;
+    h += rel.familyMembers.slice(0,12).map(m => `<span class="relit" data-w="${escapeHtml(m)}">${escapeHtml(m)}</span>`).join('，');
+    if(rel.familyMembers.length > 12) h += `<span style="color:#47607d">… 共 ${rel.familyMembers.length} 个</span>`;
+    h += `</div>`;
+  }
+  if(rel.cooc.length){
+    h += `<div class="relsec"><span class="relsec-tag" style="border-color:${C.coEdge};color:#94a3b8">共现</span>`;
+    h += rel.cooc.map(p => `<span class="relit" data-w="${escapeHtml(p[0])}">${escapeHtml(p[0])}</span><span style="color:#47607d">×${p[1]}</span>`).join('，');
+    h += `</div>`;
+  }
+  h += '</div>';
+  return h;
+}
+function showDetail(w, withRel){
+  const r = wordIndex.get(w);
+  if(!r) return;
+  // 从搭配/共现里找该词的例句
+  const sents = [];
+  for(const c of DATA.collocations){
+    if(c[1]===w || c[2]===w) sents.push([(c[6]||'候选')+' · '+c[0]+'搭配「'+c[1]+' → '+c[2]+'」', c[4], c[5]]);
+  }
+  for(const c of DATA.cooccurrences){
+    if(c[0]===w || c[1]===w) sents.push(['有向共现「'+c[0]+'→'+c[1]+'」(频次 '+c[2]+'；课文覆盖 '+c[3]+')', c[5], c[4]]);
+  }
+  let html = `<h2>${escapeHtml(r[0])}<span class="py">${escapeHtml(r[1])}</span></h2>
+    <div style="margin-top:6px">
+      <span class="tag">${POS_CN[r[2]]||r[2]||'—'}</span>
+      <span class="tag">${escapeHtml(r[4]||'HSK未标注')}</span>
+      <span class="tag">出现 ${r[5]} 次</span><span class="tag">教材${r[11]}部 · 课文${r[12]}篇 · 学科${r[13]}类</span>
+    </div>
+    <div class="kv"><b>释义</b><div class="body">${escapeHtml(r[3]||'（暂未接入统一释义资源）')}</div></div>`;
+  html += `<div class="kv"><b>教材例句（v10）</b><div class="body">${escapeHtml(r[10]||'—')}</div></div>`;
+  if(DATA.legacyDefinitions[w]) html += `<details class="kv"><summary>旧站释义附注（来源待核）</summary>${escapeHtml(DATA.legacyDefinitions[w])}</details>`;
+  if(withRel) html += relBlockHtml(w);   // 检索模式：关系清单置顶（搭配6类/词族/共现）
+  html += `<div class="kv"><b>主题</b><div class="body">${r[6].split('；').filter(Boolean).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'—'}</div></div>
+    <div class="kv"><b>共享词形组</b><div class="body">${escapeHtml(r[7]||'—')}</div></div>
+    <div class="kv"><b>搭配示例</b><div class="body">${escapeHtml(r[8]||'—')}</div></div>
+    <div class="kv"><b>例句出处</b><div class="body" style="font-size:11.5px">${escapeHtml(r[9]||'—')}</div></div>`;
+  if(sents.length){
+    html += `<div class="kv"><b>关系例句</b>`;
+    for(const [lab, sent, lesson] of sents.slice(0,3)){
+      html += `<div class="sent">【${escapeHtml(lab)}】${escapeHtml(sent||'')}<br><span style="color:#47607d">— ${escapeHtml(lesson||'')}</span></div>`;
+    }
+    html += `</div>`;
+  }
+  html += recBlockHtml(w);   // 按关联依据展示推荐词
+  document.getElementById('detailBody').innerHTML = html;
+  document.getElementById('detail').classList.add('open');
+}
+
+/* ================= 词汇检索 ================= */
+let flashTimer = null;
+function hideSuggest(){
+  const box = document.getElementById('kwSuggest');
+  if(box) box.style.display = 'none';
+}
+function doSuggest(q, curSel){
+  const sug = document.getElementById('kwSuggest');
+  q = q.trim();
+  if(!q){ hideSuggest(); return []; }
+  const isLatin = /^[a-z\s]+$/i.test(q);
+  const ql = q.toLowerCase().replace(/\s+/g, '');
+  let hits = [];
+  if(isLatin){
+    const seen = new Set();
+    for(const [w, pyT, pyP, f] of DATA.pyIdx){
+      if(pyP.startsWith(ql)){ hits.push([w, pyT, f, 0]); seen.add(w); }
+    }
+    if(hits.length < 10){
+      for(const [w, pyT, pyP, f] of DATA.pyIdx){
+        if(!seen.has(w) && pyP.includes(ql)){ hits.push([w, pyT, f, 1]); seen.add(w); }
+      }
+    }
+  }else{
+    const seen = new Set();
+    for(const rec of DATA.words){
+      if(rec[0].startsWith(q)){ hits.push([rec[0], rec[1], rec[5], 0]); seen.add(rec[0]); }
+    }
+    if(hits.length < 10){
+      for(const rec of DATA.words){
+        if(!seen.has(rec[0]) && rec[0].includes(q)){ hits.push([rec[0], rec[1], rec[5], 1]); seen.add(rec[0]); }
+      }
+    }
+  }
+  hits.sort((a,b) => a[3]-b[3] || b[2]-a[2]);
+  hits = hits.slice(0, 10);
+  if(!hits.length){
+    sug.innerHTML = '<div class="none">无匹配词（回车确认是否未收录）</div>';
+    sug.style.display = 'block';
+    return [];
+  }
+  sug.innerHTML = hits.map((h, i) => {
+    const rec = wordIndex.get(h[0]);
+    const pos = rec ? (POS_CN[rec[2]] || rec[2]) : '';
+    return `<div class="it${i===curSel?' sel':''}" data-w="${escapeHtml(h[0])}"><b>${escapeHtml(h[0])}</b><span class="py">${escapeHtml(h[1])}</span><span class="meta">${escapeHtml(pos)} · ${h[2]}次</span></div>`;
+  }).join('');
+  sug.style.display = 'block';
+  return hits;
+}
+function focusWord(w){
+  const rec = wordIndex.get(w);
+  if(!rec){ toast('未收录：词表中没有「' + w + '」'); return; }
+  // —— 星型关系子图：目标词 + 直接关联词（搭配对象/共现词/词族高频成员）——
+  const nodes = new Set([w]);
+  // 搭配对象（6 类全部）
+  for(const c of DATA.collocations){ if(c[1]===w) nodes.add(c[2]); if(c[2]===w) nodes.add(c[1]); }
+  // 共现词 Top 5
+  let cn = 0;
+  for(const c of DATA.cooccurrences){
+    if(cn >= 5) break;
+    if(c[0]===w){ nodes.add(c[1]); cn++; }
+    if(cn < 5 && c[1]===w){ nodes.add(c[0]); cn++; }
+  }
+  // 词族高频成员（含自身，补足 Top 8）
+  for(const f of DATA.families){
+    if(!f.w.includes(w)) continue;
+    const byFreq = f.w.slice().sort((a,b) => ((wordIndex.get(b)||[])[5]||0) - ((wordIndex.get(a)||[])[5]||0));
+    byFreq.slice(0, 8).forEach(m => nodes.add(m));
+    break;
+  }
+  state.focus = { word: w, nodes };
+  render();
+  // 力导向布局需时间稳定，双保险定位
+  setTimeout(() => flashAndCenter(w), 500);
+  setTimeout(() => flashAndCenter(w), 1400);
+  showDetail(w, true);   // 带关系搭配清单
+}
+function flashAndCenter(w){
+  const name = 'w:' + w;
+  const rec = wordIndex.get(w);
+  if(!rec) return;
+  // 高亮：dispatchAction highlight/downplay 交替（不触碰 data，保留 buildGraph 的 label/fixed/样式）
+  // 闪烁 3 次后常亮；目标词样式由 buildGraph 的 isF 分支保证（放大/描边/大标签/固定圆心）
+  let k = 0;
+  clearInterval(flashTimer);
+  flashTimer = setInterval(() => {
+    k++;
+    if(k % 2 === 1) chart.dispatchAction({type:'highlight', seriesIndex:0, name:name});
+    else chart.dispatchAction({type:'downplay', seriesIndex:0, name:name});
+    if(k >= 6){
+      clearInterval(flashTimer);
+      chart.dispatchAction({type:'highlight', seriesIndex:0, name:name});
+    }
+  }, 230);
+  showDetail(w, !!state.focus);   // 检索星型模式下带关系搭配清单
+}
+function clearSearch(){
+  const kw = document.getElementById('kwSearch');
+  if(kw) kw.value = '';
+  const cb = document.getElementById('kwClear');
+  if(cb) cb.style.display = 'none';
+  hideSuggest();
+  clearInterval(flashTimer);
+  try{ chart.dispatchAction({type:'downplay', seriesIndex:0}); }catch(e){}
+  if(state.focus){ state.focus = null; render(); }
+  else if(state.temp && state.temp.size){ state.temp = new Set(); render(); }
+  const dl = document.getElementById('detail');
+  if(dl) dl.classList.remove('open');
+}
+function bindSearch(){
+  const kw = document.getElementById('kwSearch');
+  const sug = document.getElementById('kwSuggest');
+  const clearBtn = document.getElementById('kwClear');
+  let selIdx = -1, hitsCache = [];
+  kw.addEventListener('input', () => {
+    clearBtn.style.display = kw.value ? 'block' : 'none';
+    selIdx = -1;
+    hitsCache = doSuggest(kw.value, -1);
+  });
+  kw.addEventListener('keydown', e => {
+    if(e.key === 'ArrowDown'){ e.preventDefault(); selIdx = Math.min(selIdx+1, hitsCache.length-1); hitsCache = doSuggest(kw.value, selIdx); if(selIdx>=0) sug.querySelectorAll('.it')[selIdx]?.scrollIntoView({block:'nearest'}); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); selIdx = Math.max(selIdx-1, -1); hitsCache = doSuggest(kw.value, selIdx); if(selIdx>=0) sug.querySelectorAll('.it')[selIdx]?.scrollIntoView({block:'nearest'}); }
+    else if(e.key === 'Enter'){
+      e.preventDefault();
+      const w = (hitsCache[selIdx] && hitsCache[selIdx][0]) || kw.value.trim();
+      if(w) focusWord(w);
+      hideSuggest();
+    }
+    else if(e.key === 'Escape'){ e.preventDefault(); clearSearch(); }
+  });
+  clearBtn.addEventListener('click', clearSearch);
+  sug.addEventListener('mousedown', e => {
+    const it = e.target.closest('.it');
+    if(!it) return;
+    e.preventDefault();
+    focusWord(it.dataset.w);
+    hideSuggest();
+  });
+  kw.addEventListener('blur', () => setTimeout(hideSuggest, 150));
+  // 关系清单/推荐学习条目点击 → 定位到该词（重新以该词为中心展开星型）
+  document.getElementById('detail').addEventListener('click', e => {
+    const it = e.target.closest('.relit, .recit');
+    if(it && it.dataset.w) focusWord(it.dataset.w);
+  });
+}
+
+/* ================= 推荐学习 ================= */
+function recFor(w){
+  const related = [];
+  const add = (peer, label, priority, evidenceCount = 0) => {
+    if(peer === w || isFunc(peer)) return;
+    related.push({w:peer, label, priority, evidenceCount});
+  };
+  if(typeof cilinReviewIndex !== 'undefined'){
+    for(const [a, b, category] of cilinReviewIndex.get(w) || []){
+      if(category === 'A') add(a === w ? b : a, '近义辨析候选', 4);
+    }
+  }
+  for(const [type, a, b, count, , , status] of DATA.collocations){
+    const peer = a === w ? b : (b === w ? a : null);
+    if(peer) add(peer, `${type}搭配 · ${status || '候选'}`, status === '已编制例证' ? 3 : 2, count);
+  }
+  for(const family of DATA.families){
+    if(!family.w.includes(w)) continue;
+    for(const peer of family.w) add(peer, `共享词形 · ${family.n}`, 1);
+  }
+  related.sort((a,b) => b.priority - a.priority || b.evidenceCount - a.evidenceCount || a.w.localeCompare(b.w,'zh'));
+  const seen = new Set();
+  return related.filter(r => {
+    if(seen.has(r.w)) return false;
+    seen.add(r.w);
+    return true;
+  }).slice(0, 5);
+}
+function recBlockHtml(w){
+  const recs = recFor(w);
+  let h = '<div class="relblock"><h3>推荐学习 <span class="dimhint">（按关联依据，点击词语查看）</span></h3>';
+  if(!recs.length) return h + '<p class="note">暂无基于辨析、搭配或共享词形的推荐。</p></div>';
+  for(const r of recs){
+    h += `<div class="recsec"><span class="recit" data-w="${escapeHtml(r.w)}">${escapeHtml(r.w)}</span>` +
+         `<span class="recwhy"><span class="reclab">${escapeHtml(r.label)}</span></span></div>`;
+  }
+  return h + '</div>';
+}
+
+/* ================= 构词候选面板 ================= */
+function showCandidateCard(cand, fam){
+  if(!cand) return;
+  const posCN = cand[0]==='前位' ? '共同词首（前位）' : '共同词尾（后位）';
+  const famN = fam ? fam.w.length : 0;
+  let html = `<h2><span style="color:#c084fc">◆</span> ${escapeHtml(cand[1])} <span class="py">${posCN}</span></h2>
+    <div style="margin-top:6px">
+      <span class="tag" style="border-color:#c084fc;color:#c084fc">构词候选 · 非词缀</span>
+      <span class="tag">v10 词表 ${cand[2]} 词种</span>
+      <span class="tag">v10词形组 ${famN} 成员</span>
+    </div>
+    <div class="kv"><b>代表词形</b><div class="body">${cand[3].split('；').map(x=>`<span class="tag">${escapeHtml(x)}</span>`).join('')}</div></div>
+    <div class="kv"><b>初步观察方向</b><div class="body">${escapeHtml(cand[4])}</div></div>
+    <div class="kv"><b>使用边界</b><div class="body" style="font-size:11.5px;color:var(--dim)">${escapeHtml(DATA.candBoundary||'')}</div></div>
+    <div class="note" style="margin-top:10px">本项为扩大词形观察范围的人工候选，未经语言学定性；相同位置不等于相同构词功能（如“正弦”与“正电荷”），须逐词分别解释。</div>`;
+  document.getElementById('detailBody').innerHTML = html;
+  document.getElementById('detail').classList.add('open');
+}
+function focusCandidate(form, pos){
+  const name = form + '·' + pos;
+  let idx = -1;
+  DATA.families.forEach((f, i) => { if(f.n === name) idx = i; });
+  const cand = CAND.get(pos + '|' + form);
+  if(idx < 0){
+    if(cand){ showCandidateCard(cand, null); toast('当前展示子集中暂无「' + name + '」词形组；已显示观察卡'); }
+    else toast('未找到候选「' + name + '」');
+    return;
+  }
+  const fam = DATA.families[idx];
+  state.collapsedFams.delete(idx);                 // 展开该族
+  fam.w.forEach(m => state.temp.add(m));           // 成员词强制可见
+  state.lyFam = true; document.getElementById('lyFam').checked = true;
+  state.lyCand = true; document.getElementById('lyCand').checked = true;
+  render();
+  setTimeout(() => {
+    chart.dispatchAction({type:'highlight', seriesIndex:0, name:'f:'+idx});
+    setTimeout(() => chart.dispatchAction({type:'downplay', seriesIndex:0, name:'f:'+idx}), 700);
+  }, 650);
+  showCandidateCard(cand, fam);
+}
+let candPos = '前位';
+function renderCandList(){
+  const list = document.getElementById('candList');
+  if(!list) return;
+  const items = DATA.candidates.filter(c => c[0] === candPos);
+  list.innerHTML = items.map(c =>
+    `<div class="cand-item" data-pos="${c[0]}" data-form="${escapeHtml(c[1])}"><b><span class="mk">◆</span>${escapeHtml(c[1])}</b><span class="n">${c[2]} 词种</span></div>`
+  ).join('');
+  document.getElementById('candTabFront').classList.toggle('on', candPos==='前位');
+  document.getElementById('candTabBack').classList.toggle('on', candPos==='后位');
+}
+function bindCandPanel(){
+  document.getElementById('candTabFront').addEventListener('click', () => { candPos = '前位'; renderCandList(); });
+  document.getElementById('candTabBack').addEventListener('click', () => { candPos = '后位'; renderCandList(); });
+  document.getElementById('candList').addEventListener('click', e => {
+    const it = e.target.closest('.cand-item');
+    if(it) focusCandidate(it.dataset.form, it.dataset.pos);
+  });
+}
+
+/* ================= 学习路径（教师备课）：按课排出建议学习序 ================= */
+function pathForLesson(lesson){
+  const ws = [];
+  for(const rec of DATA.words){
+    if((DATA.wordLessons[rec[0]]||[]).includes(lesson) && !isFunc(rec[0])) ws.push(rec);
+  }
+  const scores = new Map();
+  const add = (w,n)=>scores.set(w,(scores.get(w)||0)+n);
+  for(const f of DATA.families) for(const w of f.w) add(w,f.w.length);
+  for(const c of DATA.collocations){add(c[1],1);if(c[2]!==c[1])add(c[2],1);}
+  for(const c of DATA.cooccurrences){add(c[0],.5);if(c[1]!==c[0])add(c[1],.5);}
+  const score = w => scores.get(w)||0;
+  ws.sort((a,b) => score(b[0]) - score(a[0]) || b[5] - a[5]);
+  return ws.slice(0, 30).map(rec => ({w:rec[0], freq:rec[5], sc:score(rec[0])}));
+}
+function renderPath(){
+  const list = document.getElementById('pathList');
+  const lesson = document.getElementById('pathLesson').value;
+  if(!lesson || lesson === '全部'){ list.innerHTML = '<div class="path-empty">请先选择课文，再点“生成该课学习路径”</div>'; return; }
+  const path = pathForLesson(lesson);
+  if(!path.length){ list.innerHTML = '<div class="path-empty">该课文暂无词表记录</div>'; return; }
+  list.innerHTML = path.map((p, i) => {
+    const next = i < path.length - 1 ? `<span class="arr">→ ${escapeHtml(path[i+1].w)}</span>` : '';
+    return `<div class="path-item" data-w="${escapeHtml(p.w)}"><span class="no">${i+1}</span><b>${escapeHtml(p.w)}</b>` +
+           `<span class="meta">${p.sc}关联 · ${p.freq}次</span>${next}</div>`;
+  }).join('');
+}
+function bindPath(){
+  const sel = document.getElementById('pathLesson');
+  Object.keys(DATA.lessonTheme).sort().forEach(l => {
+    const o = document.createElement('option');
+    o.value = l; o.textContent = l;
+    sel.appendChild(o);
+  });
+  document.getElementById('pathBtn').addEventListener('click', renderPath);
+  document.getElementById('pathList').addEventListener('click', e => {
+    const it = e.target.closest('.path-item');
+    if(it && it.dataset.w) focusWord(it.dataset.w);
+  });
+}
+
+/* ================= 控件绑定 ================= */
+function bindControls(){
+  const bind = (id, key) => document.getElementById(id).addEventListener('change', e => {
+    state[key] = e.target.checked; render();
+  });
+  bind('lyFam','lyFam'); bind('lyTheme','lyTheme'); bind('lyCol','lyCol'); bind('lyCo','lyCo'); bind('lyCand','lyCand');
+  bind('edgeLabel','edgeLabel'); bind('showAll','showAll');
+
+  const freq = document.getElementById('minFreq');
+  freq.addEventListener('input', () => {
+    state.minFreq = +freq.value;
+    document.getElementById('minFreqVal').textContent = freq.value;
+    render();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    state.collapsedFams.clear();
+    chart.dispatchAction({type:'restore'});
+  });
+
+  document.getElementById('detailClose').addEventListener('click', () => {
+    document.getElementById('detail').classList.remove('open');
+  });
+
+  // 主题筛选复选框
+  const tf = document.getElementById('themeFilter');
+  for(const [t, desc] of Object.entries(DATA.themeTags)){
+    const lab = document.createElement('label');
+    lab.className = 'chk';
+    lab.innerHTML = `<input type="checkbox" checked data-theme="${escapeHtml(t)}">${escapeHtml(t)}<span style="color:#47607d;font-size:11px">${escapeHtml(desc.slice(0,14))}…</span>`;
+    lab.querySelector('input').addEventListener('change', e => {
+      const t2 = e.target.dataset.theme;
+      e.target.checked ? state.themes.add(t2) : state.themes.delete(t2);
+      render();
+    });
+    tf.appendChild(lab);
+  }
+
+  // 课文下拉
+  const sel = document.getElementById('lessonSel');
+  Object.keys(DATA.lessonTheme).sort().forEach(l => {
+    const o = document.createElement('option');
+    o.value = l; o.textContent = l + '（' + DATA.lessonTheme[l] + '）';
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', () => { state.lesson = sel.value; render(); });
+}
+
+/* ================= 图节点点击 ================= */
+function bindChartClick(){
+  chart.on('click', p => {
+    if(p.dataType !== 'node') return;
+    const d = p.data;
+    if(d.wordData){ showDetail(d.wordData[0]); return; }
+    if(d.familyIndex !== undefined){
+      state.collapsedFams.has(d.familyIndex)
+        ? state.collapsedFams.delete(d.familyIndex)
+        : state.collapsedFams.add(d.familyIndex);
+      render();
+      if(d.cand){
+        const fam = DATA.families[d.familyIndex];
+        showCandidateCard(d.cand, fam);
+      }
+      return;
+    }
+    if(d.themeName){
+      const cb = document.querySelector(`[data-theme="${CSS.escape(d.themeName)}"]`);
+      if(cb){ cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
+    }
+  });
+}
+
+/* ================= ECharts CDN 加载（主源失败切备用） ================= */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(()=> t.style.display='none', 4000);
+}
+function boot(){
+  if(typeof echarts === 'undefined'){
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js';
+    s.onload = () => init();
+    s.onerror = () => toast('ECharts 库加载失败：主/备 CDN 均不可达，请检查网络后刷新（离线方案见方法说明.md）');
+    document.head.appendChild(s);
+  } else init();
+}
+function init(){
+  chart = echarts.init(document.getElementById('chart'));
+  bindControls();
+  bindSearch();
+  bindChartClick();
+  renderCandList();
+  bindCandPanel();
+  bindPath();
+  render();
+  window.addEventListener('resize', () => chart.resize());
+}
+window.addEventListener('resize', () => { if(chart) chart.resize(); });
+</script>
+<script src="cilin-data.js?v=v10-20261105"></script>
+<script src="cilin-review-data.js?v=20261108"></script>
+<script src="cilin-ui.js?v=20261108"></script>
+<script>boot();
+</script>
+</body>
+</html>
