@@ -1,80 +1,93 @@
-function cilinExample(w){return CILIN.examples[w]||{sentence:"暂无教材例句",source:""};}
-/* 词林来源关联：词段证据保留，显示筛选不改动匹配数据。 */
-const cilinIndex = new Map();
-for (const g of CILIN.groups) for (const w of g.members) {
-  if (!cilinIndex.has(w)) cilinIndex.set(w, []);
-  cilinIndex.get(w).push(g);
+// 只用词林标记为“=”的词段。排除记录针对词段和义项，不删除词本身。
+const cilinContextExclusions = new Map([
+  ["Ih05C01=", new Set(["抽", "滑坡", "刨"])],
+  ["Da14B01=", new Set(["功"])],
+  ["Dj05A01=", new Set(["圆"])],
+  ["Cb07A01=", new Set(["圆"])],
+  ["Dk16B01=", new Set(["电"])],
+  ["Hi11D01=", new Set(["电", "发电"])],
+  ["Br01A13=", new Set(["面"])],
+  ["Bb02A01=", new Set(["面"])],
+  ["Kd01A01=", new Set(["底"])],
+  ["Da21A03=", new Set(["底"])],
+  ["De03A01=", new Set(["种", "胆"])],
+  ["Eb36C01=", new Set(["弱"])],
+  ["Ib03B01=", new Set(["弱"])],
+  ["Da08B01=", new Set(["造化"])],
+  ["Hj43C01=", new Set(["温"])],
+  ["Ed61A01=", new Set(["夫"])],
+  ["Dd14A01=", new Set(["马力"])],
+  ["Da13A01=", new Set(["光"])],
+  ["Id03A01=", new Set(["光"])],
+  ["Kc04B01=", new Set(["纵"])],
+  ["Dn09A02=", new Set(["和", "水"])],
+  ["Ed15C01=", new Set(["和"])],
+  ["Ed15A01=", new Set(["可以"])],
+]);
+const cilinSynonymIndex = new Map();
+for (const group of CILIN.groups) {
+  if(group.marker !== '=') continue;
+  const excluded = cilinContextExclusions.get(group.code);
+  const members = group.members.filter(word => wordIndex.has(word) && !excluded?.has(word));
+  for(const word of members){
+    if(!cilinSynonymIndex.has(word)) cilinSynonymIndex.set(word, []);
+    cilinSynonymIndex.get(word).push({code:group.code,members});
+  }
+}
+// 从 v10 教材用例中选取该词段义项的示例，不影响词对纳入。
+const reductionExamples = {
+  "减": {
+    "sentence": "因此，日常生活中我们应养成良好的习惯，少吃 “游离糖”，小心 “隐形糖”，减掉 “添加糖”，科学控糖，避免 “高糖” 危害。",
+    "source": "理工中文 / 14_第十四章饮食中的大学问_03_高糖食品的危害"
+  },
+  "减小": {
+    "sentence": "在一段平直的铁轨上行驶的火车，受到机车的牵引力，同时受到空气和铁轨对它的阻力，牵引力使火车的速度增大，阻力使火车的速度减小。",
+    "source": "基础科技汉语教程阅读课本下 / 54_02_物体在平衡力作用下的运动"
+  },
+  "压缩": {
+    "sentence": "灰松鼠的繁殖能力也比红松鼠强，所以灰松鼠的数量在急剧上升，结果红松鼠的栖息地进一步被压缩。",
+    "source": "汉语科技文选读 / 04_生物世界_第4课"
+  }
+};
+function cilinExample(word,codes){
+  const example = codes.includes('Ih05C01=') && reductionExamples[word];
+  return example || CILIN.examples[word] || {sentence:'暂无教材例句',source:''};
 }
 function cilinSelection(w) {
-  const kind = document.getElementById('cilinKind').value;
-  const samePOS = document.getElementById('cilinPOS').checked;
   const limit = Number(document.getElementById('cilinLimit').value);
-  const pos = (wordIndex.get(w)||[])[2];
-  const groups = (cilinIndex.get(w)||[]).filter(g=>g.marker!=='@' && (kind==='all'||g.marker===kind));
   const peers = new Map();
-  for (const g of groups) for (const other of g.members) {
-    if(other===w || (samePOS && (wordIndex.get(other)||[])[2]!==pos)) continue;
-    if(!peers.has(other)) peers.set(other, []);
-    peers.get(other).push(g);
-  }
-  const all = [...peers].sort((a,b)=>Number(b[1].some(g=>g.marker==='='))-Number(a[1].some(g=>g.marker==='=')) || wordIndex.get(b[0])[5]-wordIndex.get(a[0])[5] || a[0].localeCompare(b[0],'zh'));
-  return {groups, all, shown:all.slice(0,limit)};
-}
-const cilinReviewIndex = new Map();
-for (const entry of (typeof CILIN_REVIEW === 'undefined' ? [] : CILIN_REVIEW)) {
-  for (const w of entry.slice(0,2)) {
-    if (!cilinReviewIndex.has(w)) cilinReviewIndex.set(w, []);
-    cilinReviewIndex.get(w).push(entry);
-  }
-}
-function cilinReviewBlock(w) {
-  const entries=cilinReviewIndex.get(w);
-  if(!entries) return '';
-  const sections=[['A','近义辨析候选'],['B','词林关联：共同义项待核'],['C','相关词或表达对比']];
-  let h='<div class="relblock"><h3>教材词语辨析</h3><p class="note">AI辅助整理。例句用于观察用法，可涉及不同义项。</p>';
-  for(const [category,title] of sections) {
-    const pairs=entries.filter(entry=>entry[2]===category);
-    if(!pairs.length) continue;
-    h+=`<details class="cilin-source"${category==='A'||entries.every(entry=>entry[2]===category)?' open':''}><summary>${title}（${pairs.length}对）</summary>`;
-    for(const [a,b,group,sense,reason,codes,ea,eb] of pairs){
-      const peer=a===w?b:a;
-      h+=`<div class="cilin-item"><div>${escapeHtml(w)} ↔ <button class="relit" data-w="${escapeHtml(peer)}">${escapeHtml(peer)}</button></div><div class="cilin-type"><b>比较要点：</b>${escapeHtml(sense)}</div><p>${escapeHtml(reason)}</p><details><summary>查看教材用例与词林出处</summary>`;
-      for(const [word,[sentence,textbook,lesson]] of [[a,ea],[b,eb]]){
-        h+=`<div class="sent"><b>${escapeHtml(word)}</b>：${escapeHtml(sentence)}<br><small>${escapeHtml(textbook+' / '+lesson)}</small></div>`;
-      }
-      h+=`<p class="cilin-foot">词林词段：${escapeHtml(codes)}</p></details></div>`;
+  for(const {code,members} of cilinSynonymIndex.get(w)||[]){
+    for(const peer of members){
+      if(peer===w) continue;
+      if(!peers.has(peer)) peers.set(peer,[]);
+      peers.get(peer).push(code);
     }
-    h+='</details>';
   }
-  return h+'</div>';
+  const entries=[...peers].map(([peer,codes])=>({peer,codes}));
+  entries.sort((a,b)=>wordIndex.get(b.peer)[5]-wordIndex.get(a.peer)[5] || a.peer.localeCompare(b.peer,'zh'));
+  return entries.slice(0,limit);
 }
 function cilinBlock(w) {
-  const {groups,all,shown}=cilinSelection(w);
-  let h='<div class="relblock cilin-source-results"><h3>词林语义关联</h3>';
-  if(!cilinIndex.has(w)) return h+'<p class="note">该词未匹配到本轮词林数据。</p></div>';
-  h+=`<div class="note">依据《同义词词林（扩展版）》的词段组织；同词性筛选采用教材主词性。当前找到 ${all.length} 个关联词，显示 ${shown.length} 个。紫色为词林同义词段，青色为词林同类词段。</div>`;
-  if(!all.length) h+='<p class="relsec">当前筛选下暂无关联词，可切换类别或取消“同词性”。</p>';
-  if(groups.length){
-    h+='<details class="cilin-source"><summary>词林来源与完整词群</summary>';
-    for(const g of groups) h+=`<div class="relsec"><b>${escapeHtml(g.code)}</b>（${g.marker==='='?'同义词段':'同类词段'}）<br>网站已收录成员：${escapeHtml(g.members.join('、'))}</div>`;
-    h+='</details>';
+  const entries=cilinSelection(w);
+  let h='<div class="relblock cilin-source-results"><h3>词林近义词</h3>';
+  if(!entries.length) return h+'<p class="note">暂无可展示的词林近义词。</p></div>';
+  h+='<p class="note">来自《同义词词林（扩展版）》的同义词段。已发现与教材义项明显不符的成员已过滤。</p>';
+  for(const {peer,codes} of entries){
+    const r=wordIndex.get(peer);
+    h+=`<div class="cilin-item"><div><button class="relit" data-w="${escapeHtml(peer)}">${escapeHtml(peer)}</button> <span class="tag">${escapeHtml(POS_CN[r[2]]||r[2])} · ${r[5]}次</span></div><details><summary>查看各词教材用例和词林出处</summary>`;
+    for(const word of [w,peer]){
+      const {sentence,source}=cilinExample(word,codes);
+      h+=`<div class="sent"><b>${escapeHtml(word)}</b>：${escapeHtml(sentence)}<br><small>${escapeHtml(source)}</small></div>`;
+    }
+    h+=`<p class="cilin-foot">词林词段：${escapeHtml(codes.join('、'))}</p></details></div>`;
   }
-  for(const [other,gs] of shown) {
-    const r=wordIndex.get(other), syn=gs.some(g=>g.marker==='=');
-    h+=`<div class="cilin-item"><div><button class="relit" data-w="${escapeHtml(other)}">${escapeHtml(other)}</button> <span class="tag">${escapeHtml(POS_CN[r[2]]||r[2])} · ${r[5]}次</span></div>`;
-    h+=`<div class="cilin-type" style="color:${syn?'#c4b5fd':'#5eead4'}">${syn?'词林同义词段':'词林同类词段'}</div>`;
-    h+=`<details><summary>查看双方教材用例</summary><div class="sent"><small>教材例句（v10）</small><br><b>${escapeHtml(w)}</b>：${escapeHtml(cilinExample(w).sentence)}<br><small>${escapeHtml(cilinExample(w).source)}</small></div><div class="sent"><small>教材例句（v10）</small><br><b>${escapeHtml(other)}</b>：${escapeHtml(cilinExample(other).sentence)}<br><small>${escapeHtml(cilinExample(other).source)}</small></div>`;
-
-    h+='</details></div>';
-  }
-  h+='<p class="cilin-foot">关系来源：《同义词词林（扩展版）》。“=”表示原资源的同义词段，“#”表示同类相关词段。连线表示词林的词段归类；教材语境中的用法见例句和辨析说明。</p></div>';
-  return h;
+  return h+'</div>';
 }
 const originalShowDetail=showDetail;
 showDetail=function(w,withRel){
   originalShowDetail(w,withRel);
   const body=document.getElementById('detailBody');
-  const block=document.createElement('section');block.innerHTML=cilinReviewBlock(w)+cilinBlock(w);
+  const block=document.createElement('section');block.innerHTML=cilinBlock(w);
   const first=body.querySelector('.kv');
   if(first) first.insertAdjacentElement('afterend',block); else body.appendChild(block);
 };
@@ -83,10 +96,15 @@ buildGraph=function(width,height){
   if(!state.focus) return originalBuildGraph(width,height);
   const w=state.focus.word, selected=cilinSelection(w);
   const semanticOnly=document.getElementById('cilinView').value==='semantic';
-  if(!semanticOnly) selected.shown.forEach(([peer])=>state.focus.nodes.add(peer));
-  const graph=semanticOnly?{nodes:[],edges:[]}:originalBuildGraph(width,height);
+  let graph={nodes:[],edges:[]};
+  if(!semanticOnly){
+    const originalNodes=state.focus.nodes;
+    state.focus.nodes=new Set([...originalNodes,...selected.map(entry=>entry.peer)]);
+    try { graph=originalBuildGraph(width,height); }
+    finally { state.focus.nodes=originalNodes; }
+  }
   if(semanticOnly){
-    const ws=[w,...selected.shown.map(x=>x[0])], cx=Math.max(120,(width-(width>850?430:0))/2),cy=height/2;
+    const ws=[w,...selected.map(entry=>entry.peer)], cx=Math.max(120,(width-(width>850?430:0))/2),cy=height/2;
     const radius=Math.max(80,Math.min(cx-60,height/2-90,250));
     ws.forEach((name,i)=>{
       const r=wordIndex.get(name), angle=(i-1)*2*Math.PI/Math.max(1,ws.length-1)-Math.PI/2;
@@ -97,19 +115,19 @@ buildGraph=function(width,height){
         label:{show:true,color:'#f3f6ff',fontSize:i?14:20,fontWeight:i?'normal':'bold'}});
     });
   }
-  for(const [peer,gs] of selected.shown){
-    const syn=gs.some(g=>g.marker==='='), label=syn?'词林同义词段':'词林同类词段';
+  for(const {peer} of selected){
+    const label='词林近义词';
     graph.edges.push({source:'w:'+w,target:'w:'+peer,symbol:['none','none'],
-      cilinRelation:{word:w,peer,groups:gs},edgeLabel:label,
-      lineStyle:{color:syn?'#a78bfa':'#2dd4bf',width:2.5,type:syn?'solid':'dashed',curveness:semanticOnly?0:.18},
-      label:{show:true,formatter:label,fontSize:11,color:syn?'#c4b5fd':'#5eead4',backgroundColor:'#101f33',padding:[3,5]}});
+      cilinRelation:{word:w,peer},edgeLabel:label,
+      lineStyle:{color:'#a78bfa',width:2.5,type:'solid',curveness:semanticOnly?0:.18},
+      label:{show:true,formatter:label,fontSize:11,color:'#c4b5fd',backgroundColor:'#101f33',padding:[3,5]}});
   }
   return graph;
 };
 const originalInit=init;
 init=function(){
   originalInit();
-  for(const id of ['cilinKind','cilinPOS','cilinLimit','cilinView']) document.getElementById(id).addEventListener('change',()=>{
+  for(const id of ['cilinLimit','cilinView']) document.getElementById(id).addEventListener('change',()=>{
     if(state.focus){ render(); showDetail(state.focus.word,true); }
   });
   document.querySelectorAll('[data-cilin-example]').forEach(b=>b.addEventListener('click',()=>{

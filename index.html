@@ -175,12 +175,10 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
   <div class="stats" id="stats"></div>
 </header>
 <div class="layout">
-  <aside><div class="sec"><h3>词林语义关联</h3><p class="note">浏览词林来源关联。已有辨析说明的词对会在词条中单独显示。</p>
-<div class="row"><select id="cilinView"><option value="semantic">语义关联视图</option><option value="combined" selected>综合关联视图</option></select></div>
-<div class="row"><select id="cilinKind"><option value="=">词林同义词段</option><option value="#">词林同类词段</option><option value="all">两类都看</option></select></div>
-<label class="chk"><input type="checkbox" id="cilinPOS" checked>仅看相同教材主词性</label>
-<div class="row"><span>关联词数量</span><select id="cilinLimit"><option>8</option><option>16</option><option>32</option></select></div>
-<div class="cilin-examples"><button data-cilin-example="温度">温度</button><button data-cilin-example="研究">研究</button><button data-cilin-example="计算">计算</button><button data-cilin-example="增加">增加</button><button data-cilin-example="减少">减少</button><button data-cilin-example="表示">表示</button></div><p class="cilin-foot">紫色：词林同义词群；青色虚线：同类相关。原有学习推荐继续保留。</p></div>
+  <aside><div class="sec"><h3>词林近义词</h3><p class="note">按《同义词词林（扩展版）》的同义词段查询。</p>
+<div class="row"><select id="cilinView"><option value="semantic">近义词视图</option><option value="combined" selected>综合关联视图</option></select></div>
+<div class="row"><span>最多显示近义词</span><select id="cilinLimit"><option>8</option><option>16</option><option>32</option></select></div>
+<div class="cilin-examples"><button data-cilin-example="温度">温度</button><button data-cilin-example="研究">研究</button><button data-cilin-example="计算">计算</button><button data-cilin-example="增加">增加</button><button data-cilin-example="减少">减少</button><button data-cilin-example="表示">表示</button></div><p class="cilin-foot">紫色连线表示词林近义关系。</p></div>
     <div class="sec">
       <h3>图层开关（可组合）</h3>
       <label class="chk"><input type="checkbox" id="lyFam" checked><span class="sw" style="background:var(--amber)"></span>词族骨架</label>
@@ -734,11 +732,6 @@ function recFor(w){
     if(peer === w || isFunc(peer)) return;
     related.push({w:peer, label, priority, evidenceCount});
   };
-  if(typeof cilinReviewIndex !== 'undefined'){
-    for(const [a, b, category] of cilinReviewIndex.get(w) || []){
-      if(category === 'A') add(a === w ? b : a, '近义辨析候选', 4);
-    }
-  }
   for(const [type, a, b, count, , , status] of DATA.collocations){
     const peer = a === w ? b : (b === w ? a : null);
     if(peer) add(peer, `${type}搭配 · ${status || '候选'}`, status === '已编制例证' ? 3 : 2, count);
@@ -758,7 +751,7 @@ function recFor(w){
 function recBlockHtml(w){
   const recs = recFor(w);
   let h = '<div class="relblock"><h3>推荐学习 <span class="dimhint">（按关联依据，点击词语查看）</span></h3>';
-  if(!recs.length) return h + '<p class="note">暂无基于辨析、搭配或共享词形的推荐。</p></div>';
+  if(!recs.length) return h + '<p class="note">暂无基于搭配或共享词形的推荐。</p></div>';
   for(const r of recs){
     h += `<div class="recsec"><span class="recit" data-w="${escapeHtml(r.w)}">${escapeHtml(r.w)}</span>` +
          `<span class="recwhy"><span class="reclab">${escapeHtml(r.label)}</span></span></div>`;
@@ -968,8 +961,7 @@ function init(){
 window.addEventListener('resize', () => { if(chart) chart.resize(); });
 </script>
 <script src="cilin-data.js?v=v10-20261105"></script>
-<script src="cilin-review-data.js?v=20261108"></script>
-<script src="cilin-ui.js?v=20261108"></script>
+<script src="cilin-ui.js?v=cilin-context3"></script>
 <script>boot();
 </script>
 </body>
