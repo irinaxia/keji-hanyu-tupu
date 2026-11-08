@@ -1,6 +1,7 @@
 // 只用词林标记为“=”的词段。排除记录针对词段和义项，不删除词本身。
 const cilinContextExclusions = new Map([
   ["Ih05C01=", new Set(["抽", "滑坡", "刨"])],
+  ["Je05C01=", new Set(["给定"])],
   ["Da14B01=", new Set(["功"])],
   ["Dj05A01=", new Set(["圆"])],
   ["Cb07A01=", new Set(["圆"])],
