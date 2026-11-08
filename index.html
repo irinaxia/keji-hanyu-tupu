@@ -576,7 +576,7 @@ function showDetail(w, withRel){
     }
     html += `</div>`;
   }
-  html += recBlockHtml(w);   // 推荐学习（学完 w → 建议学），恒显示
+  html += recBlockHtml(w);   // 按关联依据展示推荐词
   document.getElementById('detailBody').innerHTML = html;
   document.getElementById('detail').classList.add('open');
 }
@@ -727,59 +727,43 @@ function bindSearch(){
   });
 }
 
-/* ================= 推荐学习（学完 A → 建议学 B） ================= */
+/* ================= 推荐学习 ================= */
 function recFor(w){
-  const ev = new Map();   // B -> {types:Set, str, freq}
-  for(const f of DATA.families){
-    if(!f.w.includes(w)) continue;
-    const byFreq = f.w.slice().sort((a,b) => ((wordIndex.get(b)||[])[5]||0) - ((wordIndex.get(a)||[])[5]||0));
-    for(const m of byFreq){
-      if(m === w) continue;
-      let e = ev.get(m) || {types:new Set(), str:0, freq:0};
-      e.types.add('词族');
-      e.str = Math.max(e.str, 0.6);
-      e.freq = (wordIndex.get(m)||[])[5]||0;
-      ev.set(m, e);
+  const related = [];
+  const add = (peer, label, priority, evidenceCount = 0) => {
+    if(peer === w || isFunc(peer)) return;
+    related.push({w:peer, label, priority, evidenceCount});
+  };
+  if(typeof cilinReviewIndex !== 'undefined'){
+    for(const [a, b, category] of cilinReviewIndex.get(w) || []){
+      if(category === 'A') add(a === w ? b : a, '近义辨析候选', 4);
     }
   }
-  for(const c of DATA.collocations){
-    const [type, w1, w2, freq] = c;
-    const other = w1 === w ? w2 : (w2 === w ? w1 : null);
-    if(!other) continue;
-    let e = ev.get(other) || {types:new Set(), str:0, freq:0};
-    e.types.add('搭配·' + type);
-    e.str = Math.max(e.str, Math.min(5, 0.8 + freq * 0.12));
-    e.freq = (wordIndex.get(other)||[])[5]||0;
-    ev.set(other, e);
+  for(const [type, a, b, count, , , status] of DATA.collocations){
+    const peer = a === w ? b : (b === w ? a : null);
+    if(peer) add(peer, `${type}搭配 · ${status || '候选'}`, status === '已编制例证' ? 3 : 2, count);
   }
-  for(const c of DATA.cooccurrences){
-    const [w1, w2, fq] = c;
-    const other = w1 === w ? w2 : (w2 === w ? w1 : null);
-    if(!other) continue;
-    let e = ev.get(other) || {types:new Set(), str:0, freq:0};
-    e.types.add('共现');
-    e.str = Math.max(e.str, Math.min(4, 0.5 + fq * 0.2));
-    e.freq = (wordIndex.get(other)||[])[5]||0;
-    ev.set(other, e);
+  for(const family of DATA.families){
+    if(!family.w.includes(w)) continue;
+    for(const peer of family.w) add(peer, `共享词形 · ${family.n}`, 1);
   }
-  const arr = [...ev.entries()].map(([b, e]) => ({w:b, n:e.types.size, str:e.str, types:[...e.types], freq:e.freq||0}));
-  arr.sort((a,b) => b.n - a.n || b.str - a.str || b.freq - a.freq);
-  return arr.slice(0, 5);
+  related.sort((a,b) => b.priority - a.priority || b.evidenceCount - a.evidenceCount || a.w.localeCompare(b.w,'zh'));
+  const seen = new Set();
+  return related.filter(r => {
+    if(seen.has(r.w)) return false;
+    seen.add(r.w);
+    return true;
+  }).slice(0, 5);
 }
 function recBlockHtml(w){
   const recs = recFor(w);
-  let h = `<div class="relblock"><h3>推荐学习 <span class="dimhint">（学完「${escapeHtml(w)}」→ 建议学，点击定位）</span></h3>`;
-  if(!recs.length){
-    h += `<div style="color:var(--dim);font-size:12px">该词暂无推荐依据（无词族/搭配/共现关联）</div></div>`;
-    return h;
-  }
+  let h = '<div class="relblock"><h3>推荐学习 <span class="dimhint">（按关联依据，点击词语查看）</span></h3>';
+  if(!recs.length) return h + '<p class="note">暂无基于辨析、搭配或共享词形的推荐。</p></div>';
   for(const r of recs){
-    const why = r.types.map(t => `<span class="reclab">${escapeHtml(t)}</span>`).join('');
     h += `<div class="recsec"><span class="recit" data-w="${escapeHtml(r.w)}">${escapeHtml(r.w)}</span>` +
-         `<span class="recwhy">${why}</span><span class="recwhy" style="color:#47607d">${r.freq}次</span></div>`;
+         `<span class="recwhy"><span class="reclab">${escapeHtml(r.label)}</span></span></div>`;
   }
-  h += '</div>';
-  return h;
+  return h + '</div>';
 }
 
 /* ================= 构词候选面板 ================= */
