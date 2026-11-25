@@ -188,6 +188,13 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <label class="chk"><input type="checkbox" id="lyCand" checked><span class="sw" style="background:#c084fc"></span>构词候选</label>
     </div>
     <div class="sec">
+      <h3>搭配筛选（九类）</h3>
+      <div class="row"><select id="collocationType" aria-label="搭配类型"></select></div>
+      <div class="row"><select id="collocationStatus" aria-label="搭配记录状态"><option value="全部">全部状态</option><option value="例证">编制例证</option><option value="候选">自动候选</option></select></div>
+      <p class="note" id="collocationSummary"></p>
+      <div class="path-list" id="collocationList" aria-label="搭配例证与候选清单"></div>
+    </div>
+    <div class="sec">
       <h3>构词候选（60 项 · 人工观察）</h3>
       <div class="cand-tabs">
         <button class="cand-tab on" id="candTabFront">共同词首（前位 30）</button>
@@ -235,6 +242,10 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <div class="legend-line"><i style="border-color:var(--green)"></i>搭配·主谓：名词 → 动词（陈述主干）</div>
       <div class="legend-line"><i style="border-color:var(--sky)"></i>搭配·定中：修饰成分 → 中心名词</div>
       <div class="legend-line"><i style="border-color:var(--yellow)"></i>搭配·状中：副词/形容词 → 动词/形容词</div>
+      <div class="legend-line"><i style="border-color:#f472b6"></i>搭配·介动：保留介词、槽位与谓词</div>
+      <div class="legend-line"><i style="border-color:#a78bfa"></i>搭配·框式介词：前后标志及中间成分</div>
+      <div class="legend-line"><i style="border-color:#38bdf8"></i>搭配·关联词：关联标志及完整语段</div>
+      <div class="note" style="margin-top:6px">实线为编制例证，虚线为自动候选。长结构用方形节点展示，连线连接其固定成分；点击可查看完整形式、原句及核查状态。</div>
       <div class="legend-line"><i style="border-color:rgba(100,116,139,.55)"></i>共现边：前词 → 后词（句内相邻）</div>
       <div class="legend-line"><span class="dot" style="background:#c084fc"></span>◆ 构词候选：60 项共同词首/词尾形式（人工观察，非词缀）</div>
     </div>
@@ -400,18 +411,17 @@ function buildGraph(chartW, chartH){
     }
   }
 
-  /* --- 搭配增强层（检索星型模式强制显示，边按 6 类分色） --- */
+  /* --- 二元搭配增强层；较长结构由 collocations-ui.js 补充 --- */
   if(state.lyCol || isFocus){
     for(const c of DATA.collocations){
+      if(!isCollocationVisible(c)) continue;
       const [type, w1, w2, freq, sent, lesson] = c;
       if(!vis.has(w1) || !vis.has(w2)) continue;
-      const CMap = {'动宾':C.dongbin,'述补':C.shubu,'量名':C.liangming,
-                    '主谓':C.zhuwei,'定中':C.dingzhong,'状中':C.zhuangzhong};
-      const color = CMap[type] || C.otherCol;
+      const color = COLLO_TYPE_COLOR[type] || C.otherCol;
       edges.push({source:'w:'+w1, target:'w:'+w2,
         symbol:['none','arrow'], symbolSize:[0,8],
         lineStyle:{color:color, width: Math.min(5, 1.2 + freq*0.35), curveness:.15, opacity:.9, type:c[6]==='已编制例证'?'solid':'dashed'},
-        edgeLabel: type, sent:sent, lesson:lesson, status:c[6],
+        edgeLabel: type, sent:sent, lesson:lesson, status:c[6], collocationId:c[7],
         label: isFocus ? {show:true, formatter: type, fontSize:10, color: color} : undefined});
     }
   }
@@ -434,6 +444,15 @@ function buildGraph(chartW, chartH){
 let chart = null;
 function render(){
   const {nodes, edges} = buildGraph(chart.getWidth(), chart.getHeight());
+  let structureView = {};
+  if(state.structureFocus){
+    const xs = nodes.map(n => n.x), ys = nodes.map(n => n.y);
+    const spanX = Math.max(...xs)-Math.min(...xs), spanY = Math.max(...ys)-Math.min(...ys);
+    const availableWidth = chart.getWidth()-(chart.getWidth()>850?430:0);
+    const scale = Math.min(1,(availableWidth-100)/spanX,(chart.getHeight()-100)/spanY);
+    const width = spanX*scale, height = spanY*scale;
+    structureView = {left:(availableWidth-width)/2,top:(chart.getHeight()-height)/2,width,height,animation:false};
+  }
   chart.setOption({
     tooltip:{
       backgroundColor:'rgba(16,31,51,.95)', borderColor:'#1e3a5c', textStyle:{color:'#dbe7f5', fontSize:12},
@@ -461,11 +480,12 @@ function render(){
     },
     series:[{
       id:'vocabGraph', type:'graph',
-      layout: state.focus ? (document.getElementById('cilinView').value==='semantic'?'none':'circular') : 'force',
+      ...structureView,
+      layout: state.structureFocus ? 'none' : state.focus ? (document.getElementById('cilinView').value==='semantic'?'none':'circular') : 'force',
       roam:true, draggable:true,
-      categories:[{name:'词'},{name:'词族'},{name:'主题'}],
+      categories:[{name:'词'},{name:'词族'},{name:'主题'},{name:'搭配结构'}],
       circular: state.focus ? {rotateLabel:true} : undefined,
-      force: state.focus ? undefined
+      force: state.focus || state.structureFocus ? undefined
                           : {repulsion: nodes.length > 450 ? 200 : 110,
                              gravity: .06, edgeLength:[25, 90], friction:.25, initLayout:'circular'},
       emphasis:{
@@ -485,7 +505,7 @@ function updateStats(n, e){
   document.getElementById('stats').innerHTML =
     `<span class="stat"><b>${DATA.words.length}</b>收录词</span>` +
     `<span class="stat"><b>${DATA.families.length}</b>词形组</span>` +
-    `<span class="stat"><b>${DATA.collocations.length}</b>搭配例证/候选</span>` +
+    `<span class="stat"><b>${DATA.collocations.length}</b>二元搭配记录</span>` +
     `<span class="stat"><b>${DATA.cooccurrences.length}</b>有向共现边</span>` +
     `<span class="stat"><b style="color:#c084fc">${DATA.candidates.length}</b>构词候选</span>` +
     `<span class="stat">当前显示 <b style="color:var(--amber)">${n}</b> 节点 / <b style="color:var(--amber)">${e}</b> 边</span>`;
@@ -496,6 +516,7 @@ const COLLO_TYPE_COLOR = {'动宾':C.dongbin,'述补':C.shubu,'量名':C.liangmi
 function collectRelations(w){
   const rel = { colloc:[], family:null, familyMembers:[], cooc:[] };
   for(const c of DATA.collocations){
+    if(!isCollocationVisible(c)) continue;
     if(c[1]===w || c[2]===w) rel.colloc.push([c[0], c[1], c[2], c[6]]);
   }
   for(const f of DATA.families){
@@ -518,7 +539,7 @@ function relBlockHtml(w){
   let h = `<div class="relblock"><h3>关系搭配 <span class="dimhint">（点击条目定位）</span></h3>`;
   if(empty){ h += `<div style="color:var(--dim);font-size:12px">该词暂无搭配/词族/共现记录</div>`; h += '</div>'; return h; }
   if(rel.colloc.length){
-    for(const t of ['动宾','述补','量名','主谓','定中','状中']){
+    for(const t of COLLOCATION_TYPES){
       const pairs = rel.colloc.filter(p => p[0]===t);
       if(!pairs.length) continue;
       const col = COLLO_TYPE_COLOR[t];
@@ -548,6 +569,7 @@ function showDetail(w, withRel){
   // 从搭配/共现里找该词的例句
   const sents = [];
   for(const c of DATA.collocations){
+    if(!isCollocationVisible(c)) continue;
     if(c[1]===w || c[2]===w) sents.push([(c[6]||'候选')+' · '+c[0]+'搭配「'+c[1]+' → '+c[2]+'」', c[4], c[5]]);
   }
   for(const c of DATA.cooccurrences){
@@ -562,7 +584,7 @@ function showDetail(w, withRel){
     <div class="kv"><b>释义</b><div class="body">${escapeHtml(r[3]||'（暂未接入统一释义资源）')}</div></div>`;
   html += `<div class="kv"><b>教材例句（v10）</b><div class="body">${escapeHtml(r[10]||'—')}</div></div>`;
   if(DATA.legacyDefinitions[w]) html += `<details class="kv"><summary>旧站释义附注（来源待核）</summary>${escapeHtml(DATA.legacyDefinitions[w])}</details>`;
-  if(withRel) html += relBlockHtml(w);   // 检索模式：关系清单置顶（搭配6类/词族/共现）
+  if(withRel) html += relBlockHtml(w);   // 检索模式：关系清单置顶
   html += `<div class="kv"><b>主题</b><div class="body">${r[6].split('；').filter(Boolean).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'—'}</div></div>
     <div class="kv"><b>共享词形组</b><div class="body">${escapeHtml(r[7]||'—')}</div></div>
     <div class="kv"><b>搭配示例</b><div class="body">${escapeHtml(r[8]||'—')}</div></div>
@@ -633,8 +655,8 @@ function focusWord(w){
   if(!rec){ toast('未收录：词表中没有「' + w + '」'); return; }
   // —— 星型关系子图：目标词 + 直接关联词（搭配对象/共现词/词族高频成员）——
   const nodes = new Set([w]);
-  // 搭配对象（6 类全部）
-  for(const c of DATA.collocations){ if(c[1]===w) nodes.add(c[2]); if(c[2]===w) nodes.add(c[1]); }
+  // 当前筛选范围内的二元搭配对象
+  for(const c of DATA.collocations){ if(!isCollocationVisible(c)) continue; if(c[1]===w) nodes.add(c[2]); if(c[2]===w) nodes.add(c[1]); }
   // 共现词 Top 5
   let cn = 0;
   for(const c of DATA.cooccurrences){
@@ -962,6 +984,8 @@ window.addEventListener('resize', () => { if(chart) chart.resize(); });
 </script>
 <script src="cilin-data.js?v=v10-20261105"></script>
 <script src="cilin-ui.js?v=cilin-context4"></script>
+<script src="collocation-structures.js?v=nine-types-20261125"></script>
+<script src="collocations-ui.js?v=nine-types-20261125"></script>
 <script>boot();
 </script>
 </body>
