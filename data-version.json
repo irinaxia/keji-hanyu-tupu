@@ -1,0 +1,18 @@
+{
+  "corpus_version": "v10-boundary-r2",
+  "textbooks": 24,
+  "lessons": 971,
+  "subjects": 38,
+  "word_types": 19663,
+  "tokens": 363551,
+  "directed_edges": 134175,
+  "total_edge_weight": 292891,
+  "synced_date": "2026-11-26",
+  "source_node_file": "03_词项主表_r2.csv (versioned local audit)",
+  "collocation_status_counts": {
+    "已编制例证": 25,
+    "优先展示候选": 144
+  },
+  "collocation_statistics_version": "v10 recognition; boundary-affected display evidence suspended",
+  "retired_form_count": 156
+}

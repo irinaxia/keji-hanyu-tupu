@@ -26,7 +26,7 @@ function renderCollocationList(){
   const list = document.getElementById('collocationList');
   const records = collocationRecords.filter(isCollocationVisible);
   document.getElementById('collocationSummary').textContent =
-    '收录170条二元记录、17项结构条目。当前显示'+records.length+'项；结构编制例证保留待正式准入状态。';
+    '收录'+DATA.collocations.length+'条二元记录、'+COLLOCATION_STRUCTURES.records.length+'项结构条目。当前显示'+records.length+'项；结构编制例证保留待正式准入状态。';
   list.innerHTML = records.map(r => {
     const color = COLLO_TYPE_COLOR[r.type];
     return `<button class="path-item collocation-item" data-collocation="${escapeHtml(r.id)}" style="text-align:left;display:block;width:100%">`
