@@ -45,16 +45,16 @@ function antonymEvidenceHtml(record){
 
 function antonymBlock(word){
   const entries=antonymSelection(word);
-  let h='<div class="relblock antonym-results"><h3>反义词（资源候选）</h3>';
+  let h='<div class="relblock antonym-results"><h3>反义词</h3>';
   if(!entries.length){
     return h+'<p class="note">'+(document.getElementById('antonymEnabled').checked
-      ? '该词暂无首批反义展示候选；不表示没有反义词。'
-      : '反义候选层已关闭。')+'</p></div>';
+      ? '该词暂无可展示的反义词。'
+      : '反义关系显示已关闭。')+'</p></div>';
   }
   h+='<p class="note">来自ChineseAntiword公开词表。</p>';
   for(const {peer,record} of entries){
     const r=wordIndex.get(peer);
-    h+=`<div class="cilin-item antonym-item" data-antonym-id="${record.id}"><div><button class="relit" data-w="${escapeHtml(peer)}">${escapeHtml(peer)}</button> <span class="tag">${escapeHtml(POS_CN[r[2]]||r[2])} · ${r[5]}次</span> <span class="tag">反义候选</span></div><details><summary>查看教材用例与关系来源</summary>${antonymEvidenceHtml(record)}</details></div>`;
+    h+=`<div class="cilin-item antonym-item" data-antonym-id="${record.id}"><div><button class="relit" data-w="${escapeHtml(peer)}">${escapeHtml(peer)}</button> <span class="tag">${escapeHtml(POS_CN[r[2]]||r[2])} · ${r[5]}次</span> <span class="tag">反义</span></div><details><summary>查看教材用例与关系来源</summary>${antonymEvidenceHtml(record)}</details></div>`;
   }
   return h+'</div>';
 }
@@ -100,9 +100,9 @@ buildGraph=function(width,height){
   }
   for(const {peer,record} of selected){
     graph.edges.push({source:'w:'+word,target:'w:'+peer,symbol:['none','none'],
-      antonymRelation:{word,peer,id:record.id},edgeLabel:'反义候选',
+      antonymRelation:{word,peer,id:record.id},edgeLabel:'反义',
       lineStyle:{color:'#fb7185',width:2.3,type:'dashed',curveness:view==='antonym'?0:-.18},
-      label:{show:true,formatter:'反义候选',fontSize:11,color:'#fda4af',backgroundColor:'#101f33',padding:[3,5]}});
+      label:{show:true,formatter:'反义',fontSize:11,color:'#fda4af',backgroundColor:'#101f33',padding:[3,5]}});
   }
   return graph;
 };
@@ -111,7 +111,7 @@ const initBeforeAntonyms=init;
 init=function(){
   initBeforeAntonyms();
   document.getElementById('antonymSummary').textContent=
-    ANTONYMS.counts.displayCandidatePairs+'对首批候选 · '+ANTONYMS.counts.displayWords+'个教材词形。';
+    ANTONYMS.counts.displayCandidatePairs+'对反义关联 · '+ANTONYMS.counts.displayWords+'个教材词形。';
   for(const id of ['antonymEnabled','antonymLimit']){
     document.getElementById(id).addEventListener('change',()=>{
       render();

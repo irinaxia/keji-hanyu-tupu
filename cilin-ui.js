@@ -70,8 +70,8 @@ function cilinSelection(w) {
 }
 function cilinBlock(w) {
   const entries=cilinSelection(w);
-  let h='<div class="relblock cilin-source-results"><h3>词林近义词</h3>';
-  if(!entries.length) return h+'<p class="note">暂无可展示的词林近义词。</p></div>';
+  let h='<div class="relblock cilin-source-results"><h3>近义词</h3>';
+  if(!entries.length) return h+'<p class="note">暂无可展示的近义词。</p></div>';
   h+='<p class="note">来自《同义词词林（扩展版）》的同义词段。已发现与教材义项明显不符的成员已过滤。</p>';
   for(const {peer,codes} of entries){
     const r=wordIndex.get(peer);
@@ -117,7 +117,7 @@ buildGraph=function(width,height){
     });
   }
   for(const {peer} of selected){
-    const label='词林近义词';
+    const label='近义';
     graph.edges.push({source:'w:'+w,target:'w:'+peer,symbol:['none','none'],
       cilinRelation:{word:w,peer},edgeLabel:label,
       lineStyle:{color:'#a78bfa',width:2.5,type:'solid',curveness:semanticOnly?0:.18},

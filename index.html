@@ -176,17 +176,17 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
   <div class="stats" id="stats"></div>
 </header>
 <div class="layout">
-  <aside><div class="sec"><h3>词林近义词</h3><p class="note">按《同义词词林（扩展版）》的同义词段查询。</p>
-<div class="row"><select id="cilinView"><option value="semantic">近义词视图</option><option value="antonym">反义候选视图</option><option value="combined" selected>综合关联视图</option></select></div>
+  <aside><div class="sec"><h3>近义词</h3><p class="note">按《同义词词林（扩展版）》的同义词段查询。</p>
+<div class="row"><select id="cilinView"><option value="semantic">近义词视图</option><option value="antonym">反义词视图</option><option value="combined" selected>综合关联视图</option></select></div>
 <div class="row"><span>最多显示近义词</span><select id="cilinLimit"><option>8</option><option>16</option><option>32</option></select></div>
-<div class="cilin-examples"><button data-cilin-example="温度">温度</button><button data-cilin-example="研究">研究</button><button data-cilin-example="计算">计算</button><button data-cilin-example="增加">增加</button><button data-cilin-example="减少">减少</button><button data-cilin-example="表示">表示</button></div><p class="cilin-foot">紫色连线表示词林近义关系。</p></div>
+<div class="cilin-examples"><button data-cilin-example="温度">温度</button><button data-cilin-example="研究">研究</button><button data-cilin-example="计算">计算</button><button data-cilin-example="增加">增加</button><button data-cilin-example="减少">减少</button><button data-cilin-example="表示">表示</button></div><p class="cilin-foot">紫色连线表示近义关系。</p></div>
     <div class="sec" id="antonymPanel">
-      <h3>反义词（资源候选）</h3>
-      <label class="chk"><input type="checkbox" id="antonymEnabled" checked><span class="sw" style="background:#fb7185"></span>查询时显示反义候选</label>
-      <div class="row"><span>最多显示</span><select id="antonymLimit" aria-label="最多显示反义候选"><option>8</option><option>16</option><option>32</option></select></div>
+      <h3>反义词</h3>
+      <label class="chk"><input type="checkbox" id="antonymEnabled" checked><span class="sw" style="background:#fb7185"></span>查询时显示反义关系</label>
+      <div class="row"><span>最多显示</span><select id="antonymLimit" aria-label="最多显示反义词"><option>8</option><option>16</option><option>32</option></select></div>
       <p class="note" id="antonymSummary"></p>
       <div class="cilin-examples"><button data-antonym-example="增加">增加</button><button data-antonym-example="升高">升高</button><button data-antonym-example="运动">运动</button><button data-antonym-example="膨胀">膨胀</button><button data-antonym-example="正确">正确</button></div>
-      <p class="cilin-foot">粉色虚线表示反义候选。来源为ChineseAntiword公开词表，已附教材证据，待研究者确认。</p>
+      <p class="cilin-foot">粉色虚线表示反义关系。来源为ChineseAntiword公开词表，已附教材证据，待研究者确认。</p>
     </div>
     <div class="sec">
       <h3>图层开关（可组合）</h3>
@@ -256,7 +256,7 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <div class="legend-line"><i style="border-color:#38bdf8"></i>搭配·关联词：关联标志及完整语段</div>
       <div class="note" style="margin-top:6px">实线为编制例证，虚线为自动候选。长结构用方形节点展示，连线连接其固定成分；点击可查看完整形式、原句及核查状态。</div>
       <div class="legend-line"><i style="border-color:rgba(100,116,139,.55)"></i>共现边：前词 → 后词（句内相邻）</div>
-      <div class="legend-line"><i style="border-color:#fb7185;border-top-style:dashed"></i>反义候选：无向关联，点击查看教材证据和来源</div>
+      <div class="legend-line"><i style="border-color:#fb7185;border-top-style:dashed"></i>反义：无向关联，点击查看教材证据和来源</div>
       <div class="legend-line"><span class="dot" style="background:#c084fc"></span>◆ 构词候选：60 项共同词首/词尾形式（人工观察，非词缀）</div>
     </div>
     <div class="sec note">
@@ -1000,12 +1000,12 @@ function init(){
 window.addEventListener('resize', () => { if(chart) chart.resize(); });
 </script>
 <script src="cilin-data.js?v=boundary-r2-20261126"></script>
-<script src="cilin-ui.js?v=cilin-context4"></script>
+<script src="cilin-ui.js?v=labels-20261126-cilin-context4"></script>
 <script src="collocation-structures.js?v=nine-types-20261125"></script>
 <script src="collocations-ui.js?v=nine-types-20261125"></script>
 <script src="boundary-sync.js?v=20261126"></script>
 <script src="antonym-data.js?v=20261126"></script>
-<script src="antonym-ui.js?v=20261126"></script>
+<script src="antonym-ui.js?v=20261126-labels"></script>
 <script>boot();
 </script>
 </body>
