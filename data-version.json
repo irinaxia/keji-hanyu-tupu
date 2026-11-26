@@ -14,5 +14,13 @@
     "优先展示候选": 144
   },
   "collocation_statistics_version": "v10 recognition; boundary-affected display evidence suspended",
-  "retired_form_count": 156
+  "retired_form_count": 156,
+  "preposition_verb_web_examples": {
+    "version": "pv-reviewed-20261127",
+    "new_records": 43,
+    "text_corrections": 1,
+    "review_basis": "用户采纳逐句AI核查建议并授权发布",
+    "main_database_changed": false,
+    "corpus_statistics_changed": false
+  }
 }

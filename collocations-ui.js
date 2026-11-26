@@ -13,7 +13,7 @@ const collocationRecordIndex = new Map(collocationRecords.map(r => [r.id,r]));
 function isCollocationVisible(record){
   const type = Array.isArray(record) ? record[0] : record.type;
   const status = Array.isArray(record) ? record[6] : record.status;
-  const example = status === '已编制例证' || status === '已编制结构例证';
+  const example = status === '已编制例证' || status === '已编制结构例证' || status === '已核查例证';
   return (state.collocationType === '全部' || state.collocationType === type)
     && (state.collocationStatus === '全部' || (state.collocationStatus === '例证' ? example : !example));
 }
@@ -26,7 +26,7 @@ function renderCollocationList(){
   const list = document.getElementById('collocationList');
   const records = collocationRecords.filter(isCollocationVisible);
   document.getElementById('collocationSummary').textContent =
-    '收录'+DATA.collocations.length+'条二元记录、'+COLLOCATION_STRUCTURES.records.length+'项结构条目。当前显示'+records.length+'项；结构编制例证保留待正式准入状态。';
+    '收录'+DATA.collocations.length+'条二元记录、'+COLLOCATION_STRUCTURES.records.length+'项结构与用法条目。当前显示'+records.length+'项。';
   list.innerHTML = records.map(r => {
     const color = COLLO_TYPE_COLOR[r.type];
     return `<button class="path-item collocation-item" data-collocation="${escapeHtml(r.id)}" style="text-align:left;display:block;width:100%">`
@@ -41,7 +41,7 @@ function collocationEvidenceHtml(record){
     if(ev.surface) h += `<b>完整形式：</b>${escapeHtml(ev.surface)}<br>`;
     h += `<b>教材原句：</b>${escapeHtml(ev.sentence || '')}`;
     if(ev.slots && Object.keys(ev.slots).length){
-      h += '<br><b>原记录槽位：</b>'+Object.entries(ev.slots)
+      h += '<br><b>结构成分：</b>'+Object.entries(ev.slots)
         .map(([key,value]) => escapeHtml(key)+' = '+escapeHtml(value)).join('；');
     }
     const source = ev.source || ev.textbook+' / '+ev.lesson;
@@ -49,6 +49,11 @@ function collocationEvidenceHtml(record){
     if(ev.sentenceId) h += `<br><small>句子编号：${escapeHtml(ev.sentenceId)}</small>`;
     if(ev.line) h += `<br><small>定位：第${escapeHtml(ev.line)}行 · 句序${escapeHtml(ev.sentenceNumber)}</small>`;
     if(ev.id) h += `<br><small>证据编号：${escapeHtml(ev.id)}</small>`;
+    if(ev.textCorrections && ev.textCorrections.length){
+      h += '<details style="margin-top:6px"><summary>文字校订记录</summary>'
+        + ev.textCorrections.map(c => escapeHtml(c.from)+' → '+escapeHtml(c.to)).join('；')
+        + '<br>原转录：'+escapeHtml(ev.sourceSentenceOriginal || '')+'</details>';
+    }
     return h+'</div>';
   }).join('');
 }
@@ -70,7 +75,7 @@ function showCollocationRecord(id){
   if(record.legacy){
     h += `<div class="kv"><b>核心词项</b><div>${escapeHtml(record.first)} → ${escapeHtml(record.second)}</div></div>`;
   }else{
-    h += `<div class="kv"><b>固定成分</b><div>${record.anchors.map(w => `<button class="relit" data-w="${escapeHtml(w)}">${escapeHtml(w)}</button>`).join('　')}</div></div>`
+    h += `<div class="kv"><b>${record.representation==='preposition_verb_example'?'核心词项':'固定成分'}</b><div>${record.anchors.map(w => `<button class="relit" data-w="${escapeHtml(w)}">${escapeHtml(w)}</button>`).join('　')}</div></div>`
       + `<div class="kv"><b>已附证据</b> ${record.evidence.length}条教材实例</div>`;
   }
   h += `<div class="kv"><b>教材用例及来源</b>${collocationEvidenceHtml(record)}</div>`
@@ -162,7 +167,7 @@ showDetail = function(word,withRel){
   block.innerHTML = '<h3>相关搭配结构</h3>'+records.map(r =>
     `<div class="relsec"><span class="relsec-tag" style="color:${COLLO_TYPE_COLOR[r.type]}">${escapeHtml(r.type)}</span>`
     + `<button data-collocation="${escapeHtml(r.id)}">${escapeHtml(r.template)}</button>`
-    + '<small>　已编制结构例证 · 待正式准入</small></div>'
+    + '<small>　'+escapeHtml(r.status)+(r.publicationStatus==='NOT_YET_FINAL_GRAPH_FACT'?' · 待正式准入':'')+'</small></div>'
   ).join('');
   document.getElementById('detailBody').appendChild(block);
 };
@@ -190,7 +195,7 @@ const statsBeforeNineTypes = updateStats;
 updateStats = function(n,e){
   statsBeforeNineTypes(n,e);
   document.getElementById('stats').insertAdjacentHTML('beforeend',
-    '<span class="stat"><b>9</b>搭配类型 · <b>17</b>结构条目</span>');
+    '<span class="stat"><b>9</b>搭配类型 · <b>'+COLLOCATION_STRUCTURES.records.length+'</b>结构与用法条目</span>');
 };
 
 const initBeforeNineTypes = init;
