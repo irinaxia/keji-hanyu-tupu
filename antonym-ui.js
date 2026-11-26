@@ -51,7 +51,7 @@ function antonymBlock(word){
       ? '该词暂无首批反义展示候选；不表示没有反义词。'
       : '反义候选层已关闭。')+'</p></div>';
   }
-  h+='<p class="note">来自ChineseAntiword公开词表，附教材用例。首批经AI辅助初筛，待研究者确认。</p>';
+  h+='<p class="note">来自ChineseAntiword公开词表。</p>';
   for(const {peer,record} of entries){
     const r=wordIndex.get(peer);
     h+=`<div class="cilin-item antonym-item" data-antonym-id="${record.id}"><div><button class="relit" data-w="${escapeHtml(peer)}">${escapeHtml(peer)}</button> <span class="tag">${escapeHtml(POS_CN[r[2]]||r[2])} · ${r[5]}次</span> <span class="tag">反义候选</span></div><details><summary>查看教材用例与关系来源</summary>${antonymEvidenceHtml(record)}</details></div>`;
