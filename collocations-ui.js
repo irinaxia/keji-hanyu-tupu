@@ -36,12 +36,13 @@ function renderCollocationList(){
 }
 
 function collocationEvidenceHtml(record){
-  return record.evidence.map(ev => {
+  const candidate = record.representation === 'conjunction_candidate';
+  const evidenceHtml = items => items.map(ev => {
     let h = '<div class="sent">';
-    if(ev.surface) h += `<b>完整形式：</b>${escapeHtml(ev.surface)}<br>`;
+    if(ev.surface) h += `<b>${candidate?'标记起始至句末的检索片段':'完整形式'}：</b>${escapeHtml(ev.surface)}<br>`;
     h += `<b>教材原句：</b>${escapeHtml(ev.sentence || '')}`;
     if(ev.slots && Object.keys(ev.slots).length){
-      h += '<br><b>结构成分：</b>'+Object.entries(ev.slots)
+      h += '<br><b>'+(candidate?'检索文本范围（待核查）':'结构成分')+'：</b>'+Object.entries(ev.slots)
         .map(([key,value]) => escapeHtml(key)+' = '+escapeHtml(value)).join('；');
     }
     const source = ev.source || ev.textbook+' / '+ev.lesson;
@@ -56,6 +57,10 @@ function collocationEvidenceHtml(record){
     }
     return h+'</div>';
   }).join('');
+  if(!candidate || record.evidence.length <= 5) return evidenceHtml(record.evidence);
+  return evidenceHtml(record.evidence.slice(0,5))
+    + '<details><summary>查看其余'+(record.evidence.length-5)+'条候选原句</summary>'
+    + evidenceHtml(record.evidence.slice(5))+'</details>';
 }
 
 function showCollocationRecord(id){
@@ -70,7 +75,14 @@ function showCollocationRecord(id){
     h += '<p class="note" style="margin-top:8px">已有研究者编制记录；正式图谱准入尚待确认。以下保留原有结构、槽位及教材证据。</p>';
   }
   if(record.status === '优先展示候选'){
-    h += '<p class="note" style="margin-top:8px">自动候选，尚不能据此认定搭配正确。</p>';
+    h += '<p class="note" style="margin-top:8px">'+(record.representation==='conjunction_candidate'
+      ? '依据大纲双标记形式匹配的教材候选；连接关系及分项边界待核查。'
+      : '自动候选，尚不能据此认定搭配正确。')+'</p>';
+  }
+  if(record.outlineSources){
+    h += '<div class="kv"><b>大纲依据</b><div>'+record.outlineSources.map(s =>
+      escapeHtml(s.level+' · '+s.projectId+' · '+s.clauseType+' · '+s.location)).join('<br>')+'</div></div>'
+      + '<div class="kv"><b>教材命中</b> '+record.matchCount+'处候选 · '+record.textbookCoverage+'部教材 · '+record.lessonCoverage+'篇课文</div>';
   }
   if(record.legacy){
     h += `<div class="kv"><b>核心词项</b><div>${escapeHtml(record.first)} → ${escapeHtml(record.second)}</div></div>`;
