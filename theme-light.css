@@ -42,3 +42,10 @@ body{color:#1e293b}h1,#detail h2{color:#172b42}
 [style*="color:#47607d"],[style*="color: #47607d"],[style*="color:#8aa3bd"]{color:#475569!important}
 [style*="color:#e9d5ff"],[style*="color:#c084fc"]{color:#59416f!important}
 [style*="color:#fda4af"]{color:#8b3e4b!important}
+
+/* 词汇等级颜色图例；关系连线继续按关系类型配色。 */
+.word-level-legend{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;padding:9px 0 5px;color:#334155;font-size:14px}
+.level-legend-title{font-weight:600;color:#243b53}.level-legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.level-legend-item i{width:13px;height:13px;display:inline-block;border-radius:50%;border:1px solid rgba(15,23,42,.15)}
+#teacherWorkbench .word-level-legend{padding:10px 0;font-size:14px}
+@media(max-width:600px){.word-level-legend{gap:7px 12px;font-size:13px}}

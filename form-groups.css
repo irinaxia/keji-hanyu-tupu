@@ -1,0 +1,32 @@
+/* 同素词群：按位置分组阅读，完整成员在独立小图中查看。 */
+.form-group-card{margin:10px 0;border:1px solid #d8cfdf;border-radius:10px;background:#fff;overflow:hidden}
+.form-group-card>summary{display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 10px;list-style:none;color:#51356c;background:#f7f4fa;min-height:48px}
+.form-group-card>summary::-webkit-details-marker{display:none}
+.form-group-card>summary:before{content:'›';font-size:20px;font-weight:600;transition:transform .15s}
+.form-group-card[open]>summary:before{transform:rotate(90deg)}
+.form-group-name{font-size:18px;font-weight:700;color:#51356c}
+.form-position{font-size:14px;flex:1;color:#604775}
+.form-group-card>summary small{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:14px}
+.form-group-body{padding:4px 10px 10px}
+.form-word-row{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto;align-items:center;gap:6px;min-height:42px;border-bottom:1px solid #edf0f4}
+.form-word-row label{display:flex;align-items:center}
+.form-word-row button,.form-member-table button{border:0;background:transparent;color:#284c70;font-size:16px;font-weight:600;text-align:left;padding:7px 2px;overflow-wrap:anywhere}
+.form-word-row span,.form-word-row small{font-size:13px;color:#526174;font-variant-numeric:tabular-nums}
+.form-word-row button:hover,.form-member-table button:hover{text-decoration:underline;color:#51356c}
+.form-group-tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:10px}
+.form-group-tools button{font-size:14px;padding:7px 9px;border-radius:7px}
+.form-group-tools button:disabled{opacity:.45;cursor:default}
+.form-selection-bar{position:sticky;bottom:0;background:#fff;border-top:1px solid #d8cfdf;padding:12px 0 4px;margin-top:12px;z-index:2}
+.form-selection-bar>span{display:block;color:#51356c;font-size:14px;margin-bottom:8px}
+.form-selection-bar button{font-size:14px;padding:8px}
+.form-selection-bar button:first-of-type{background:#6d4d85;border-color:#6d4d85;color:white}
+.form-selection-bar button:disabled{opacity:.45;cursor:default}
+#candList{display:block;max-height:650px;overflow-y:auto;scrollbar-gutter:stable;padding-right:4px}
+.form-detail-meta{color:#526174;font-size:14px;margin:10px 0;line-height:1.6}
+#formMemberSearch{width:100%;margin-top:8px;padding:10px;border:1px solid #c9d5df;border-radius:7px;background:#fff;font-size:16px;box-sizing:border-box}
+.form-table-wrap{overflow-x:auto}.form-member-table{width:100%;border-collapse:collapse;font-size:14px}
+.form-member-table th,.form-member-table td{padding:9px 5px;text-align:left;border-bottom:1px solid #e1e7ed;white-space:nowrap}
+.form-member-table th{color:#354a60;background:#f2f5f8;font-weight:600}.form-member-table input,.form-word-row input{accent-color:#6d4d85}
+.form-member-table td:nth-child(2){white-space:normal;overflow-wrap:anywhere}
+.form-group-card button:focus-visible,.form-group-card summary:focus-visible{outline:2px solid #76558e;outline-offset:-2px}
+@media(max-width:600px){#candList{max-height:440px}.form-word-row{gap:4px}.form-member-table th,.form-member-table td{padding:8px 3px}}

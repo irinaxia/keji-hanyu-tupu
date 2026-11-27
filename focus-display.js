@@ -31,7 +31,7 @@ buildGraph=function(width,height){
   const capacity=ring===0?10:16+8*(ring-1),batch=peers.slice(offset,offset+capacity),radius=145+ring*105;
   batch.forEach((node,i)=>{const angle=-Math.PI/2+(i+.5*(ring%2))*2*Math.PI/batch.length;
    node.x=cx+radius*Math.cos(angle);node.y=cy+radius*Math.sin(angle);node.fixed=true;
-   node.symbolSize=node.wordData?Math.min(38,16+Math.log2(node.wordData[5]+1)*1.5):[80,32];
+   node.symbolSize=node.fullFormGroup?14:node.wordData?Math.min(38,16+Math.log2(node.wordData[5]+1)*1.5):[80,32];
    node.label={show:true,position:Math.cos(angle)<-.15?'left':'right',distance:6,rotate:0,fontSize:12,color:node.wordData?'#dbeafe':'#e9d5ff',fontWeight:'normal'};
    node.itemStyle={...node.itemStyle,shadowBlur:0};
   });offset+=batch.length;ring++;
@@ -68,7 +68,7 @@ render=function(){
  updateStats(graph.nodes.length,graph.edges.length);
 };
 const flashBeforeReadableFocus=flashAndCenter;
-flashAndCenter=function(word){if(readableFocusEnabled())return;return flashBeforeReadableFocus(word);};
+flashAndCenter=function(word){if(readableFocusEnabled()||state.fullFormFocus)return;return flashBeforeReadableFocus(word);};
 const focusWordBeforeReadableFocus=focusWord;
 focusWord=function(word){
  state.edgeLabel=true;document.getElementById('edgeLabel').checked=true;
