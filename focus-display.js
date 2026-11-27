@@ -40,8 +40,8 @@ buildGraph=function(width,height){
  if(center){center.x=cx;center.y=cy;center.fixed=true;center.symbolSize=64;center.label={show:true,position:'bottom',distance:10,rotate:0,fontSize:18,color:'#fde68a',fontWeight:'bold'};}
  for(const edge of graph.edges){
   edge.lineStyle={...edge.lineStyle,width:Math.min(2,edge.lineStyle?.width||1),opacity:(edge.source===centerId||edge.target===centerId)? .55 : .2,curveness:.04};
-  edge.label={...edge.label,show:state.edgeLabel,formatter:edge.edgeLabel||'',fontSize:10};
-  edge.emphasis={lineStyle:{opacity:1,width:3},label:{show:true,formatter:edge.edgeLabel||'',fontSize:12}};
+  edge.label={show:state.edgeLabel,position:'middle',formatter:edge.edgeLabel||'',fontSize:10,color:edge.lineStyle.color||'#b9cbe2',backgroundColor:'#0b1626',padding:[2,3],borderRadius:3};
+  edge.emphasis={lineStyle:{opacity:1,width:3},label:{show:true,position:'middle',formatter:edge.edgeLabel||'',fontSize:11}};
  }
  const summary=document.getElementById('focusDisplaySummary');
  if(summary)summary.textContent='当前展开 '+peers.length+' 个关联节点；可调显示数量，完整记录见左侧清单。';
@@ -49,9 +49,30 @@ buildGraph=function(width,height){
 };
 const renderBeforeReadableFocus=render;
 render=function(){
- renderBeforeReadableFocus();
- const panel=document.getElementById('focusDisplayControls');if(panel)panel.style.display=readableFocusEnabled()?'flex':'none';
- if(readableFocusEnabled()){const graph=buildGraph(chart.getWidth(),chart.getHeight());chart.setOption({animation:false,series:[{id:'vocabGraph',type:'graph',animation:false,layout:'none',force:null,circular:null,data:graph.nodes,links:graph.edges,left:50,right:null,top:50,bottom:null,width:Math.max(200,Math.min(chart.getWidth()-(chart.getWidth()>850?540:100),chart.getHeight()-180)),height:Math.max(200,Math.min(chart.getWidth()-(chart.getWidth()>850?540:100),chart.getHeight()-180)),labelLayout:{hideOverlap:true},emphasis:{focus:'adjacency',blurScope:'coordinateSystem',label:{show:true},lineStyle:{opacity:1}}}]});}
+ const enabled=readableFocusEnabled();
+ const panel=document.getElementById('focusDisplayControls');if(panel)panel.style.display=enabled?'flex':'none';
+ if(!enabled){renderBeforeReadableFocus();return;}
+ const graph=buildGraph(chart.getWidth(),chart.getHeight());
+ const size=Math.max(200,Math.min(chart.getWidth()-(chart.getWidth()>850?540:100),chart.getHeight()-160));
+ // 一次性重建静态查词图，避免圆形布局的旧标签和强调状态混入新布局。
+ chart.setOption({animation:false,tooltip:{backgroundColor:'rgba(16,31,51,.97)',borderColor:'#29415e',textStyle:{color:'#dbe7f5',fontSize:12},formatter:p=>{
+  if(p.dataType==='edge')return escapeHtml(p.data.edgeLabel||'关系')+'<br>点击查看记录与教材证据';
+  const row=p.data.wordData;return row?'<b>'+escapeHtml(row[0])+'</b><br>'+escapeHtml(POS_CN[row[2]]||row[2])+' · '+row[5]+'次<br>点击查看教材用例':escapeHtml(p.data.name)+'<br>点击展开词群';
+ }},series:[{id:'vocabGraph',type:'graph',animation:false,layout:'none',roam:true,draggable:true,
+  left:50,top:40,width:size,height:size,data:graph.nodes,links:graph.edges,
+  categories:[{name:'词'},{name:'词群'},{name:'学科'},{name:'结构'}],
+  label:{show:true,fontSize:12,color:'#dbeafe'},edgeLabel:{show:state.edgeLabel,position:'middle',fontSize:10},
+  lineStyle:{curveness:.04,opacity:.6},emphasis:{scale:1.08,label:{show:true},lineStyle:{opacity:1,width:2.5}},
+  select:{disabled:true}
+ }]},true);
+ updateStats(graph.nodes.length,graph.edges.length);
+};
+const flashBeforeReadableFocus=flashAndCenter;
+flashAndCenter=function(word){if(readableFocusEnabled())return;return flashBeforeReadableFocus(word);};
+const focusWordBeforeReadableFocus=focusWord;
+focusWord=function(word){
+ state.edgeLabel=true;document.getElementById('edgeLabel').checked=true;
+ return focusWordBeforeReadableFocus(word);
 };
 const initBeforeReadableFocus=init;
 init=function(){
