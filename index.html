@@ -67,7 +67,7 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
 .legend-line .dot{width:11px;height:11px;border-radius:50%;flex:none}
 .legend-line .sq{width:11px;height:11px;border-radius:3px;flex:none}
 .note{font-size:11.5px;color:var(--dim);line-height:1.6;background:var(--panel2);border-radius:6px;padding:8px 10px}
-/* ===== 构词候选面板 ===== */
+/* ===== 词形观察面板 ===== */
 .cand-tabs{display:flex;gap:6px;margin-bottom:6px}
 .cand-tab{flex:1;padding:5px 0;font-size:11.5px;border:1px solid var(--line);border-radius:5px;
   background:var(--panel2);color:var(--dim);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -194,23 +194,25 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <label class="chk"><input type="checkbox" id="lyTheme" checked><span class="sw" style="background:var(--cyan)"></span>主题地图</label>
       <label class="chk"><input type="checkbox" id="lyCol"><span class="sw" style="background:var(--orange)"></span>搭配增强</label>
       <label class="chk"><input type="checkbox" id="lyCo"><span class="sw" style="background:#64748b"></span>共现增强</label>
-      <label class="chk"><input type="checkbox" id="lyCand" checked><span class="sw" style="background:#c084fc"></span>构词候选</label>
+      <label class="chk"><input type="checkbox" id="lyCand" checked><span class="sw" style="background:#c084fc"></span>词形观察</label>
     </div>
     <div class="sec">
       <h3>搭配筛选（九类）</h3>
       <div class="row"><select id="collocationType" aria-label="搭配类型"></select></div>
-      <div class="row"><select id="collocationStatus" aria-label="搭配记录状态"><option value="全部">全部状态</option><option value="例证">编制例证</option><option value="候选">自动候选</option></select></div>
+      <div class="row"><select id="collocationStatus" aria-label="搭配记录状态"><option value="全部">全部状态</option><option value="例证">编制例证</option><option value="记录">搭配记录</option></select></div>
+      <input id="collocationSearch" aria-label="检索搭配记录" placeholder="输入词语或组合编号" style="width:100%;padding:6px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:5px">
       <p class="note" id="collocationSummary"></p>
-      <div class="path-list" id="collocationList" aria-label="搭配例证与候选清单"></div>
+      <div class="path-list" id="collocationList" aria-label="搭配记录清单"></div>
+      <div class="row"><button id="collocationPrev">上一页</button><span id="collocationPageLabel"></span><button id="collocationNext">下一页</button></div>
     </div>
     <div class="sec">
-      <h3>构词候选（60 项 · 人工观察）</h3>
+      <h3>词形观察（60 项 · 人工观察）</h3>
       <div class="cand-tabs">
         <button class="cand-tab on" id="candTabFront">共同词首（前位 30）</button>
         <button class="cand-tab" id="candTabBack">共同词尾（后位 30）</button>
       </div>
       <div class="cand-list" id="candList"></div>
-      <div class="note" style="margin-top:6px">点击候选语素 → 图中展开该词族并显示观察卡；候选≠词缀，仅供扩大观察范围。</div>
+      <div class="note" style="margin-top:6px">点击共同成分 → 图中展开该词族并显示观察卡；共享字形不等于同一语素，仅供扩大观察范围。</div>
     </div>
     <div class="sec">
       <h3>显示控制</h3>
@@ -254,10 +256,10 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <div class="legend-line"><i style="border-color:#f472b6"></i>搭配·介动：保留介词、槽位与谓词</div>
       <div class="legend-line"><i style="border-color:#a78bfa"></i>搭配·框式介词：前后标志及中间成分</div>
       <div class="legend-line"><i style="border-color:#38bdf8"></i>搭配·关联词：关联标志及完整语段</div>
-      <div class="note" style="margin-top:6px">实线为编制例证，虚线为自动候选。长结构用方形节点展示，连线连接其固定成分；点击可查看完整形式、原句及核查状态。</div>
+      <div class="note" style="margin-top:6px">实线为编制例证，虚线为搭配记录。全量清单可检索、翻页；图面每次最多补充150条搭配连线，查词时补充50条。长结构用方形节点展示，连线连接其固定成分；点击可查看完整形式、原句及核查状态。</div>
       <div class="legend-line"><i style="border-color:rgba(100,116,139,.55)"></i>共现边：前词 → 后词（句内相邻）</div>
       <div class="legend-line"><i style="border-color:#fb7185;border-top-style:dashed"></i>反义：无向关联，点击查看教材证据和来源</div>
-      <div class="legend-line"><span class="dot" style="background:#c084fc"></span>◆ 构词候选：60 项共同词首/词尾形式（人工观察，非词缀）</div>
+      <div class="legend-line"><span class="dot" style="background:#c084fc"></span>◆ 词形观察：60 项共同词首/词尾形式（人工观察，非词缀）</div>
     </div>
     <div class="sec note">
       操作：拖拽节点可移位；滚轮缩放；拖拽空白平移。点击<b style="color:var(--amber)">词族节点</b>展开/收起成员词；点击<b style="color:var(--cyan)">主题节点</b>切换该主题筛选；点击<b style="color:var(--blue)">词节点</b>查看详情（释义、出处、例句）。
@@ -300,7 +302,7 @@ const state = {
   focus:null,       // 检索星型模式：{word, nodes:Set}（目标词+直接关联词）
 };
 
-/* ===== 构词候选索引：[位置|形式] → [位置, 形式, 词种数, 代表词形串, 观察方向] ===== */
+/* ===== 词形观察索引：[位置|形式] → [位置, 形式, 词种数, 代表词形串, 观察方向] ===== */
 const CAND = new Map();
 DATA.candidates.forEach(c => CAND.set(c[0] + '|' + c[1], c));
 
@@ -376,7 +378,7 @@ function buildGraph(chartW, chartH){
       const collapsed = !isFocus && state.collapsedFams.has(i);
       const members = f.w.filter(m => vis.has(m) && !collapsed);
       if(members.length < 2) return;   // 单成员词族不显示，避免噪声
-      const candInfo = state.lyCand ? CAND.get(f.p + '|' + f.m) : null;   // 构词候选标记
+      const candInfo = state.lyCand ? CAND.get(f.p + '|' + f.m) : null;   // 词形观察标记
       nodes.push({
         id:'f:'+i, name:f.n, category:1,
         symbolSize: Math.min(34, 16 + members.length*1.1),
@@ -483,7 +485,7 @@ function render(){
               <span style="color:#8aa3bd">点击查看详情</span>`;
           }
           if(d.familyIndex !== undefined){
-            const tip = d.cand ? `<br><span style="color:#c084fc">◆ 构词候选（人工观察 · 非词缀）</span>` : '';
+            const tip = d.cand ? `<br><span style="color:#c084fc">◆ 词形观察（人工观察 · 非词缀）</span>` : '';
             return `<b style="color:#fde68a">${escapeHtml(d.name)}</b>${tip}<br><span style="color:#8aa3bd">点击展开/收起成员词</span>`;
           }
           return `<b style="color:#0b1626">${escapeHtml(d.name)}</b><br><span style="color:#8aa3bd">学科主题 · 点击筛选</span>`;
@@ -522,9 +524,9 @@ function updateStats(n, e){
   document.getElementById('stats').innerHTML =
     `<span class="stat"><b>${DATA.words.length}</b>收录词</span>` +
     `<span class="stat"><b>${DATA.families.length}</b>词形组</span>` +
-    `<span class="stat"><b>${DATA.collocations.length}</b>二元搭配记录</span>` +
+    `<span class="stat"><b>${DATA.collocations.length}</b>原有搭配展示</span>` +
     `<span class="stat"><b>${DATA.cooccurrences.length}</b>有向共现边</span>` +
-    `<span class="stat"><b style="color:#c084fc">${DATA.candidates.length}</b>构词候选</span>` +
+    `<span class="stat"><b style="color:#c084fc">${DATA.candidates.length}</b>词形观察</span>` +
     `<span class="stat">当前显示 <b style="color:var(--amber)">${n}</b> 节点 / <b style="color:var(--amber)">${e}</b> 边</span>`;
 }
 
@@ -562,7 +564,7 @@ function relBlockHtml(w){
       const col = COLLO_TYPE_COLOR[t];
       h += `<div class="relsec"><span class="relsec-tag" style="border-color:${col};color:${col}">${t}</span>`;
       h += pairs.map(([tp, a, b, status]) =>
-        `<span class="relit" data-w="${escapeHtml(a)}">${escapeHtml(a)}</span><span class="relarrow" style="color:${col}">→</span><span class="relit" data-w="${escapeHtml(b)}">${escapeHtml(b)}</span><small style="color:var(--dim)">（${escapeHtml(status||'候选')}）</small>`).join('　');
+        `<span class="relit" data-w="${escapeHtml(a)}">${escapeHtml(a)}</span><span class="relarrow" style="color:${col}">→</span><span class="relit" data-w="${escapeHtml(b)}">${escapeHtml(b)}</span><small style="color:var(--dim)">（${escapeHtml(collocationStatusLabel(status))}）</small>`).join('　');
       h += `</div>`;
     }
   }
@@ -587,7 +589,7 @@ function showDetail(w, withRel){
   const sents = [];
   for(const c of DATA.collocations){
     if(!isCollocationVisible(c)) continue;
-    if(c[1]===w || c[2]===w) sents.push([(c[6]||'候选')+' · '+c[0]+'搭配「'+c[1]+' → '+c[2]+'」', c[4], c[5]]);
+    if(c[1]===w || c[2]===w) sents.push([collocationStatusLabel(c[6])+' · '+c[0]+'搭配「'+c[1]+' → '+c[2]+'」', c[4], c[5]]);
   }
   for(const c of DATA.cooccurrences){
     if(c[0]===w || c[1]===w) sents.push(['有向共现「'+c[0]+'→'+c[1]+'」(频次 '+c[2]+'；课文覆盖 '+c[3]+')', c[5], c[4]]);
@@ -773,7 +775,7 @@ function recFor(w){
   };
   for(const [type, a, b, count, , , status] of DATA.collocations){
     const peer = a === w ? b : (b === w ? a : null);
-    if(peer) add(peer, `${type}搭配 · ${status || '候选'}`, status === '已编制例证' ? 3 : 2, count);
+    if(peer) add(peer, `${type}搭配 · ${collocationStatusLabel(status)}`, status === '已编制例证' ? 3 : 2, count);
   }
   for(const family of DATA.families){
     if(!family.w.includes(w)) continue;
@@ -798,21 +800,21 @@ function recBlockHtml(w){
   return h + '</div>';
 }
 
-/* ================= 构词候选面板 ================= */
+/* ================= 词形观察面板 ================= */
 function showCandidateCard(cand, fam){
   if(!cand) return;
   const posCN = cand[0]==='前位' ? '共同词首（前位）' : '共同词尾（后位）';
   const famN = fam ? fam.w.length : 0;
   let html = `<h2><span style="color:#c084fc">◆</span> ${escapeHtml(cand[1])} <span class="py">${posCN}</span></h2>
     <div style="margin-top:6px">
-      <span class="tag" style="border-color:#c084fc;color:#c084fc">构词候选 · 非词缀</span>
+      <span class="tag" style="border-color:#c084fc;color:#c084fc">词形观察 · 非词缀</span>
       <span class="tag">v10 词表 ${cand[2]} 词种</span>
       <span class="tag">v10词形组 ${famN} 成员</span>
     </div>
     <div class="kv"><b>代表词形</b><div class="body">${cand[3].split('；').map(x=>`<span class="tag">${escapeHtml(x)}</span>`).join('')}</div></div>
     <div class="kv"><b>初步观察方向</b><div class="body">${escapeHtml(cand[4])}</div></div>
     <div class="kv"><b>使用边界</b><div class="body" style="font-size:11.5px;color:var(--dim)">${escapeHtml(DATA.candBoundary||'')}</div></div>
-    <div class="note" style="margin-top:10px">本项为扩大词形观察范围的人工候选，未经语言学定性；相同位置不等于相同构词功能（如“正弦”与“正电荷”），须逐词分别解释。</div>`;
+    <div class="note" style="margin-top:10px">本项为扩大词形观察范围的观察条目，未经语言学定性；相同位置不等于相同构词功能（如“正弦”与“正电荷”），须逐词分别解释。</div>`;
   document.getElementById('detailBody').innerHTML = html;
   document.getElementById('detail').classList.add('open');
 }
@@ -823,7 +825,7 @@ function focusCandidate(form, pos){
   const cand = CAND.get(pos + '|' + form);
   if(idx < 0){
     if(cand){ showCandidateCard(cand, null); toast('当前展示子集中暂无「' + name + '」词形组；已显示观察卡'); }
-    else toast('未找到候选「' + name + '」');
+    else toast('未找到成分「' + name + '」');
     return;
   }
   const fam = DATA.families[idx];
@@ -1004,7 +1006,8 @@ window.addEventListener('resize', () => { if(chart) chart.resize(); });
 <script src="collocation-structures.js?v=nine-types-20261125"></script>
 <script src="pv-reviewed-examples.js?v=pv-reviewed-20261127"></script>
 <script src="conjunction-candidates.js?v=outline-conj-20261127"></script>
-<script src="collocations-ui.js?v=outline-conj-20261127"></script>
+<script src="full-six-collocations.js?v=full-six-20261127"></script>
+<script src="collocations-ui.js?v=full-six-20261127"></script>
 <script src="boundary-sync.js?v=20261126"></script>
 <script src="antonym-data.js?v=20261126"></script>
 <script src="antonym-ui.js?v=20261126-labels"></script>
