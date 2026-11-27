@@ -160,6 +160,7 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
 </style>
 <style>.relation-group{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;background:rgba(21,42,68,.32)}.relation-group>summary{font-size:13px;font-weight:700;color:var(--cyan);cursor:pointer;padding:3px 0}.relation-group[open]>summary{margin-bottom:10px}.relation-group .sec:last-child{margin-bottom:0}.relation-layer-title{font-size:15px;color:var(--cyan);font-weight:700;border-top:1px solid var(--line);padding:14px 0 10px;margin-top:12px}.sec h4{font-size:13px;margin:8px 0;color:var(--text)}aside>.sec>h3{font-size:13px}#detail{width:410px;transform:translateX(460px)}#detail.open{transform:translateX(0)}.cilin-item{padding:12px 0;border-bottom:1px solid #29415e}.cilin-item button{font-size:16px;color:#ddd6fe}.cilin-type{font-size:12px;margin:5px 0}.cilin-item summary{cursor:pointer;font-size:12px;color:#9eafc6;margin:8px 0}.cilin-foot{font-size:11px;color:#8aa3bd;line-height:1.65;margin-top:9px}.cilin-examples{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}#detail .sent{color:#d5e2f2}#detail small{color:#8aa3bd}@media(max-width:850px){#detail{width:min(410px,85vw)}}</style><style>.antonym-item button{color:#fda4af}.antonym-results h3{color:#fda4af}.antonym-results a{color:#fda4af}.antonym-word-examples{margin:10px 0}</style>
 <link rel="stylesheet" href="theme-light.css?v=light-darktext-20261127">
+<link rel="stylesheet" href="teacher-workbench.css?v=teacher-20261127">
 </head>
 <body>
 <header>
@@ -229,13 +230,6 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
     <div class="sec">
       <h3>课文筛选</h3>
       <select id="lessonSel"><option value="全部">全部课文</option></select>
-    </div>
-    <div class="sec">
-      <h3>学习路径（教师备课）</h3>
-      <select id="pathLesson"></select>
-      <div class="row"><button id="pathBtn" style="width:100%">生成该课学习路径</button></div>
-      <div id="pathList" class="path-list"></div>
-      <div class="note" style="margin-top:6px">按“图谱连接度”排出建议学习序（枢纽词先学）；点击词语定位并查看其推荐学习。</div>
     </div>
     <div class="sec">
       <h3>关系类型说明</h3>
@@ -857,47 +851,6 @@ function bindCandPanel(){
   });
 }
 
-/* ================= 学习路径（教师备课）：按课排出建议学习序 ================= */
-function pathForLesson(lesson){
-  const ws = [];
-  for(const rec of DATA.words){
-    if((DATA.wordLessons[rec[0]]||[]).includes(lesson) && !isFunc(rec[0])) ws.push(rec);
-  }
-  const scores = new Map();
-  const add = (w,n)=>scores.set(w,(scores.get(w)||0)+n);
-  for(const f of DATA.families) for(const w of f.w) add(w,f.w.length);
-  for(const c of DATA.collocations){add(c[1],1);if(c[2]!==c[1])add(c[2],1);}
-  for(const c of DATA.cooccurrences){add(c[0],.5);if(c[1]!==c[0])add(c[1],.5);}
-  const score = w => scores.get(w)||0;
-  ws.sort((a,b) => score(b[0]) - score(a[0]) || b[5] - a[5]);
-  return ws.slice(0, 30).map(rec => ({w:rec[0], freq:rec[5], sc:score(rec[0])}));
-}
-function renderPath(){
-  const list = document.getElementById('pathList');
-  const lesson = document.getElementById('pathLesson').value;
-  if(!lesson || lesson === '全部'){ list.innerHTML = '<div class="path-empty">请先选择课文，再点“生成该课学习路径”</div>'; return; }
-  const path = pathForLesson(lesson);
-  if(!path.length){ list.innerHTML = '<div class="path-empty">该课文暂无词表记录</div>'; return; }
-  list.innerHTML = path.map((p, i) => {
-    const next = i < path.length - 1 ? `<span class="arr">→ ${escapeHtml(path[i+1].w)}</span>` : '';
-    return `<div class="path-item" data-w="${escapeHtml(p.w)}"><span class="no">${i+1}</span><b>${escapeHtml(p.w)}</b>` +
-           `<span class="meta">${p.sc}关联 · ${p.freq}次</span>${next}</div>`;
-  }).join('');
-}
-function bindPath(){
-  const sel = document.getElementById('pathLesson');
-  Object.keys(DATA.lessonTheme).sort().forEach(l => {
-    const o = document.createElement('option');
-    o.value = l; o.textContent = l;
-    sel.appendChild(o);
-  });
-  document.getElementById('pathBtn').addEventListener('click', renderPath);
-  document.getElementById('pathList').addEventListener('click', e => {
-    const it = e.target.closest('.path-item');
-    if(it && it.dataset.w) focusWord(it.dataset.w);
-  });
-}
-
 /* ================= 控件绑定 ================= */
 function bindControls(){
   const bind = (id, key) => document.getElementById(id).addEventListener('change', e => {
@@ -992,7 +945,6 @@ function init(){
   bindChartClick();
   renderCandList();
   bindCandPanel();
-  bindPath();
   render();
   window.addEventListener('resize', () => chart.resize());
 }
@@ -1012,6 +964,7 @@ window.addEventListener('resize', () => { if(chart) chart.resize(); });
 <script src="full-form-ui.js?v=form-query-links-20261127"></script>
 <script src="focus-display.js?v=focus-render-fix-20261127"></script>
 <script src="theme-light.js?v=light-darktext-20261127"></script>
+<script src="teacher-workbench.js?v=teacher-20261127"></script>
 <script>boot();
 </script>
 </body>
