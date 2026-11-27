@@ -173,6 +173,7 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <div id="kwSuggest" class="suggest"></div>
     </div>
   </div>
+  <div id="focusDisplayControls" style="display:none;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0;font-size:12px;color:var(--dim)"><label>显示关联词 <select id="focusPeerLimit" style="width:100px;display:inline-block"><option value="24">24个</option><option value="48">48个</option><option value="80">80个</option><option value="0">全部已展开</option></select></label><label><input type="checkbox" id="focusPeerEdges"> 显示邻词间连线</label><span id="focusDisplaySummary"></span></div>
   <div class="stats" id="stats"></div>
 </header>
 <div class="layout">
@@ -1008,6 +1009,7 @@ window.addEventListener('resize', () => { if(chart) chart.resize(); });
 <script src="antonym-ui.js?v=20261126-labels"></script>
 <script src="full-form-groups.js?v=full-forms-20261127"></script>
 <script src="full-form-ui.js?v=form-query-links-20261127"></script>
+<script src="focus-display.js?v=readable-focus-20261127"></script>
 <script>boot();
 </script>
 </body>
