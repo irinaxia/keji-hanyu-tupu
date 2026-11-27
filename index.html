@@ -158,13 +158,13 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
   aside{width:100%;max-height:38%;border-right:none;border-bottom:1px solid var(--line)}
 }
 </style>
-<style>#detail{width:410px;transform:translateX(460px)}#detail.open{transform:translateX(0)}.cilin-item{padding:12px 0;border-bottom:1px solid #29415e}.cilin-item button{font-size:16px;color:#ddd6fe}.cilin-type{font-size:12px;margin:5px 0}.cilin-item summary{cursor:pointer;font-size:12px;color:#9eafc6;margin:8px 0}.cilin-foot{font-size:11px;color:#8aa3bd;line-height:1.65;margin-top:9px}.cilin-examples{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}#detail .sent{color:#d5e2f2}#detail small{color:#8aa3bd}@media(max-width:850px){#detail{width:min(410px,85vw)}}</style><style>.antonym-item button{color:#fda4af}.antonym-results h3{color:#fda4af}.antonym-results a{color:#fda4af}.antonym-word-examples{margin:10px 0}</style>
+<style>.relation-group{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;background:rgba(21,42,68,.32)}.relation-group>summary{font-size:13px;font-weight:700;color:var(--cyan);cursor:pointer;padding:3px 0}.relation-group[open]>summary{margin-bottom:10px}.relation-group .sec:last-child{margin-bottom:0}.relation-layer-title{font-size:15px;color:var(--cyan);font-weight:700;border-top:1px solid var(--line);padding:14px 0 10px;margin-top:12px}.sec h4{font-size:13px;margin:8px 0;color:var(--text)}aside>.sec>h3{font-size:13px}#detail{width:410px;transform:translateX(460px)}#detail.open{transform:translateX(0)}.cilin-item{padding:12px 0;border-bottom:1px solid #29415e}.cilin-item button{font-size:16px;color:#ddd6fe}.cilin-type{font-size:12px;margin:5px 0}.cilin-item summary{cursor:pointer;font-size:12px;color:#9eafc6;margin:8px 0}.cilin-foot{font-size:11px;color:#8aa3bd;line-height:1.65;margin-top:9px}.cilin-examples{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}#detail .sent{color:#d5e2f2}#detail small{color:#8aa3bd}@media(max-width:850px){#detail{width:min(410px,85vw)}}</style><style>.antonym-item button{color:#fda4af}.antonym-results h3{color:#fda4af}.antonym-results a{color:#fda4af}.antonym-word-examples{margin:10px 0}</style>
 </head>
 <body>
 <header>
   <div class="title-row">
     <h1>科技汉语词汇知识图谱</h1>
-    <span class="sub">边界修订r2 · 24部教材 · 971篇课文 · 19,663词 · 38类学科</span>
+    <span class="sub">24部教材 · 971篇课文 · 19,663词 · 38类学科</span>
   </div>
   <div class="search-row">
     <div class="search-box">
@@ -176,28 +176,31 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
   <div class="stats" id="stats"></div>
 </header>
 <div class="layout">
-  <aside><div class="sec"><h3>近义词</h3><p class="note">按《同义词词林（扩展版）》的同义词段查询。</p>
+  <aside><details class="relation-group"><summary>形式层 · 同素</summary>    <div class="sec">
+<label class="chk"><input type="checkbox" id="lyFam" checked><span class="sw" style="background:var(--amber)"></span>显示词群连接</label><label class="chk"><input type="checkbox" id="lyCand" checked><span class="sw" style="background:#c084fc"></span>显示共同成分</label>
+      <div class="cand-tabs">
+        <button class="cand-tab on" id="candTabFront">共同词首（前位 30）</button>
+        <button class="cand-tab" id="candTabBack">共同词尾（后位 30）</button>
+      </div>
+      <div class="cand-list" id="candList"></div>
+      <div class="note" style="margin-top:6px">按共同词首、词尾组织词群；点击成分查看成员词及教材用例。同组词语是否共享同一语素，需结合词义核对。</div>
+    </div>
+</details>
+<details class="relation-group"><summary>意义层 · 近义、反义</summary><div class="sec"><h3>近义</h3><p class="note">按《同义词词林（扩展版）》的同义词段查询。</p>
 <div class="row"><select id="cilinView"><option value="semantic">近义词视图</option><option value="antonym">反义词视图</option><option value="combined" selected>综合关联视图</option></select></div>
 <div class="row"><span>最多显示近义词</span><select id="cilinLimit"><option>8</option><option>16</option><option>32</option></select></div>
 <div class="cilin-examples"><button data-cilin-example="温度">温度</button><button data-cilin-example="研究">研究</button><button data-cilin-example="计算">计算</button><button data-cilin-example="增加">增加</button><button data-cilin-example="减少">减少</button><button data-cilin-example="表示">表示</button></div><p class="cilin-foot">紫色连线表示近义关系。</p></div>
     <div class="sec" id="antonymPanel">
-      <h3>反义词</h3>
+      <h3>反义</h3>
       <label class="chk"><input type="checkbox" id="antonymEnabled" checked><span class="sw" style="background:#fb7185"></span>查询时显示反义关系</label>
       <div class="row"><span>最多显示</span><select id="antonymLimit" aria-label="最多显示反义词"><option>8</option><option>16</option><option>32</option></select></div>
       <p class="note" id="antonymSummary"></p>
       <div class="cilin-examples"><button data-antonym-example="增加">增加</button><button data-antonym-example="升高">升高</button><button data-antonym-example="运动">运动</button><button data-antonym-example="膨胀">膨胀</button><button data-antonym-example="正确">正确</button></div>
       <p class="cilin-foot">粉色虚线表示反义关系。来源为ChineseAntiword公开词表，已附教材证据，待研究者确认。</p>
     </div>
-    <div class="sec">
-      <h3>图层开关（可组合）</h3>
-      <label class="chk"><input type="checkbox" id="lyFam" checked><span class="sw" style="background:var(--amber)"></span>词族骨架</label>
-      <label class="chk"><input type="checkbox" id="lyTheme" checked><span class="sw" style="background:var(--cyan)"></span>主题地图</label>
-      <label class="chk"><input type="checkbox" id="lyCol"><span class="sw" style="background:var(--orange)"></span>搭配增强</label>
-      <label class="chk"><input type="checkbox" id="lyCo"><span class="sw" style="background:#64748b"></span>共现增强</label>
-      <label class="chk"><input type="checkbox" id="lyCand" checked><span class="sw" style="background:#c084fc"></span>词形观察</label>
-    </div>
-    <div class="sec">
-      <h3>搭配筛选（九类）</h3>
+</details>
+<details class="relation-group" open><summary>使用层 · 共现、搭配</summary>    <div class="sec">
+      <label class="chk"><input type="checkbox" id="lyCo"><span class="sw" style="background:#64748b"></span>共现</label><label class="chk"><input type="checkbox" id="lyCol"><span class="sw" style="background:var(--orange)"></span>搭配</label><h4>搭配筛选（九类）</h4>
       <div class="row"><select id="collocationType" aria-label="搭配类型"></select></div>
       <div class="row"><select id="collocationStatus" aria-label="搭配记录状态"><option value="全部">全部状态</option><option value="例证">编制例证</option><option value="记录">搭配记录</option></select></div>
       <input id="collocationSearch" aria-label="检索搭配记录" placeholder="输入词语或组合编号" style="width:100%;padding:6px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:5px">
@@ -205,17 +208,9 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <div class="path-list" id="collocationList" aria-label="搭配记录清单"></div>
       <div class="row"><button id="collocationPrev">上一页</button><span id="collocationPageLabel"></span><button id="collocationNext">下一页</button></div>
     </div>
+</details>
     <div class="sec">
-      <h3>词形观察（60 项 · 人工观察）</h3>
-      <div class="cand-tabs">
-        <button class="cand-tab on" id="candTabFront">共同词首（前位 30）</button>
-        <button class="cand-tab" id="candTabBack">共同词尾（后位 30）</button>
-      </div>
-      <div class="cand-list" id="candList"></div>
-      <div class="note" style="margin-top:6px">点击共同成分 → 图中展开该词族并显示观察卡；共享字形不等于同一语素，仅供扩大观察范围。</div>
-    </div>
-    <div class="sec">
-      <h3>显示控制</h3>
+      <h3>显示控制</h3><label class="chk"><input type="checkbox" id="lyTheme" checked><span class="sw" style="background:var(--cyan)"></span>显示学科连接</label>
       <label class="chk"><input type="checkbox" id="edgeLabel">显示关系边标签</label>
       <label class="chk"><input type="checkbox" id="showAll">显示全部词（含功能词）</label>
       <div class="row">
@@ -242,10 +237,10 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
     </div>
     <div class="sec">
       <h3>关系类型说明</h3>
-      <div class="legend-line"><span class="dot" style="background:var(--amber)"></span>词形组节点：共享词首或词尾形式</div>
+      <div class="legend-line"><span class="dot" style="background:var(--amber)"></span>同素词群节点：按共同词首或词尾组织</div>
       <div class="legend-line"><span class="sq" style="background:var(--cyan)"></span>主题节点：学科主题及其核心词</div>
       <div class="legend-line"><span class="dot" style="background:var(--blue)"></span>词节点：大小 = 出现频次</div>
-      <div class="legend-line"><i style="border-color:rgba(79,142,247,.45)"></i>词形边：形式组 → 成员词</div>
+      <div class="legend-line"><i style="border-color:rgba(79,142,247,.45)"></i>词群连接：共同成分 → 成员词</div>
       <div class="legend-line"><i style="border-color:rgba(34,211,238,.5)"></i>主题边：主题 → 核心词</div>
       <div class="legend-line"><i style="border-color:var(--orange)"></i>搭配·动宾：动词 → 宾语（强关系）</div>
       <div class="legend-line"><i style="border-color:var(--teal)"></i>搭配·述补：谓词 → 补语</div>
@@ -262,7 +257,7 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <div class="legend-line"><span class="dot" style="background:#c084fc"></span>◆ 词形观察：60 项共同词首/词尾形式（人工观察，非词缀）</div>
     </div>
     <div class="sec note">
-      操作：拖拽节点可移位；滚轮缩放；拖拽空白平移。点击<b style="color:var(--amber)">词族节点</b>展开/收起成员词；点击<b style="color:var(--cyan)">主题节点</b>切换该主题筛选；点击<b style="color:var(--blue)">词节点</b>查看详情（释义、出处、例句）。
+      操作：拖拽节点可移位；滚轮缩放；拖拽空白平移。点击<b style="color:var(--amber)">词群节点</b>展开/收起成员词；点击<b style="color:var(--cyan)">主题节点</b>切换该主题筛选；点击<b style="color:var(--blue)">词节点</b>查看详情（释义、出处、例句）。
     </div>
   </aside>
   <main>
@@ -600,12 +595,13 @@ function showDetail(w, withRel){
       <span class="tag">${escapeHtml(r[4]||'HSK未标注')}</span>
       <span class="tag">出现 ${r[5]} 次</span><span class="tag">教材${r[11]}部 · 课文${r[12]}篇 · 学科${r[13]}类</span>
     </div>
-    <div class="kv"><b>释义</b><div class="body">${escapeHtml(r[3]||'（暂未接入统一释义资源）')}</div></div>`;
-  html += `<div class="kv"><b>教材例句（修订r2）</b><div class="body">${escapeHtml(r[10]||'—')}</div></div>`;
+    `;
+  if(r[3] && !/暂未|未接入|待补|^—$/.test(r[3])) html += `<div class="kv"><b>释义</b><div class="body">${escapeHtml(r[3])}</div></div>`;
+  html += `<div class="kv"><b>教材例句</b><div class="body">${escapeHtml(r[10]||'—')}</div></div>`;
   if(DATA.legacyDefinitions[w]) html += `<details class="kv"><summary>旧站释义附注（来源待核）</summary>${escapeHtml(DATA.legacyDefinitions[w])}</details>`;
   if(withRel) html += relBlockHtml(w);   // 检索模式：关系清单置顶
   html += `<div class="kv"><b>主题</b><div class="body">${r[6].split('；').filter(Boolean).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'—'}</div></div>
-    <div class="kv"><b>共享词形组</b><div class="body">${escapeHtml(r[7]||'—')}</div></div>
+    <div class="kv"><b>同素词群</b><div class="body">${escapeHtml(r[7]||'—')}</div></div>
     <div class="kv"><b>搭配示例</b><div class="body">${escapeHtml(r[8]||'—')}</div></div>
     <div class="kv"><b>例句出处</b><div class="body" style="font-size:11.5px">${escapeHtml(r[9]||'—')}</div></div>`;
   if(sents.length){
@@ -1008,7 +1004,7 @@ window.addEventListener('resize', () => { if(chart) chart.resize(); });
 <script src="conjunction-candidates.js?v=outline-conj-20261127"></script>
 <script src="full-six-collocations.js?v=full-six-20261127"></script>
 <script src="collocations-ui.js?v=full-six-20261127"></script>
-<script src="boundary-sync.js?v=20261126"></script>
+<script src="boundary-sync.js?v=layers-20261127"></script>
 <script src="antonym-data.js?v=20261126"></script>
 <script src="antonym-ui.js?v=20261126-labels"></script>
 <script>boot();
