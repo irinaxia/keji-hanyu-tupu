@@ -7,7 +7,7 @@ for(const group of FULL_FORM_GROUPS.records) for(const member of group.members){
 }
 let formKind='单字',formPage=0,formMemberPage=0;
 const FORM_PAGE_SIZE=50,FORM_MEMBER_PAGE_SIZE=80;
-function formPositionLabel(pos){return ({词首:'前位同素',词尾:'后位同素',词中:'词中同素',全部:'全部位置'})[pos]||'全部位置';}
+function formPositionLabel(pos){return ({词首:'前位同素',词尾:'后位同素',全部:'全部位置'})[pos]||'全部位置';}
 function formMembersAt(group,pos){return group.members.filter(m=>pos==='全部'||m[1].includes(pos));}
 function formMemberFrequency(members){return members.reduce((n,m)=>n+wordIndex.get(m[0])[5],0);}
 function filteredFormGroups(){

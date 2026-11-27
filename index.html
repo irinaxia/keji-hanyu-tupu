@@ -182,8 +182,8 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
         <button class="cand-tab on" id="candTabFront">单字成分</button>
         <button class="cand-tab" id="candTabBack">双字成分</button>
       </div>
-      <input id="formSearch" aria-label="检索成分或成员词" placeholder="检索成分或成员词，如电、原子" style="width:100%;padding:6px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:5px"><label for="formPosition" style="display:block;margin:8px 0 4px">同素位置</label><select id="formPosition" aria-label="同素位置"><option value="词首">前位同素（词首）</option><option value="词尾">后位同素（词尾）</option><option value="词中">词中同素</option><option value="全部">全部位置</option></select><p class="note" id="formSummary"></p><div class="cand-list" id="candList"></div><div class="row"><button id="formPrev">上一页</button><span id="formPageLabel"></span><button id="formNext">下一页</button></div>
-      <div class="note" style="margin-top:6px">按前位、后位和词中位置分别查看；数量、成员及连线随位置筛选。相同字形的不同语素仍需结合词义区分。</div>
+      <input id="formSearch" aria-label="检索成分或成员词" placeholder="检索成分或成员词，如电、原子" style="width:100%;padding:6px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:5px"><label for="formPosition" style="display:block;margin:8px 0 4px">同素位置</label><select id="formPosition" aria-label="同素位置"><option value="词首">前位同素（词首）</option><option value="词尾">后位同素（词尾）</option><option value="全部">全部位置</option></select><p class="note" id="formSummary"></p><div class="cand-list" id="candList"></div><div class="row"><button id="formPrev">上一页</button><span id="formPageLabel"></span><button id="formNext">下一页</button></div>
+      <div class="note" style="margin-top:6px">按前位、后位分别查看；数量、成员及连线随位置筛选。相同字形的不同语素仍需结合词义区分。</div>
     </div>
 </details>
 <details class="relation-group"><summary>意义层 · 近义、反义</summary><div class="sec"><h3>近义</h3><p class="note">按《同义词词林（扩展版）》的同义词段查询。</p>
@@ -1007,7 +1007,7 @@ window.addEventListener('resize', () => { if(chart) chart.resize(); });
 <script src="antonym-data.js?v=20261126"></script>
 <script src="antonym-ui.js?v=20261126-labels"></script>
 <script src="full-form-groups.js?v=full-forms-20261127"></script>
-<script src="full-form-ui.js?v=form-position-20261127"></script>
+<script src="full-form-ui.js?v=form-position-front-back-20261127"></script>
 <script>boot();
 </script>
 </body>
