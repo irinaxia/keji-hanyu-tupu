@@ -41,7 +41,8 @@ function showFullFormGroup(){
  +'<div class="kv"><b>词群编号</b><div>'+escapeHtml(g.id)+'</div></div>';
  document.getElementById('detailBody').innerHTML=html;document.getElementById('detail').classList.add('open');document.getElementById('detail').scrollTop=0;
 }
-function focusFullFormGroup(id){
+function focusFullFormGroup(id,position){
+ if(position)document.getElementById('formPosition').value=position;
  if(!fullFormIndex.has(id))return;
  if(!formMembersAt(fullFormIndex.get(id),document.getElementById('formPosition').value).length){document.getElementById('formPosition').value='全部';renderCandList();}
  clearInterval(flashTimer);hideSuggest();state.focus=null;state.structureFocus=null;state.fullCollocationFocus=null;state.collocationDetail=null;state.fullFormFocus=id;state.fullFormPosition=document.getElementById('formPosition').value;formMemberPage=0;
@@ -54,12 +55,33 @@ bindCandPanel=function(){
  document.getElementById('candList').addEventListener('click',e=>{const b=e.target.closest('[data-form-group]');if(b)focusFullFormGroup(b.dataset.formGroup);});
  document.getElementById('detailBody').addEventListener('click',e=>{
   const step=e.target.closest('[data-form-member-step]');if(step){formMemberPage+=Number(step.dataset.formMemberStep);render();showFullFormGroup();return;}
-  const group=e.target.closest('[data-form-group]');if(group)focusFullFormGroup(group.dataset.formGroup);
+  const group=e.target.closest('[data-form-group]');if(group)focusFullFormGroup(group.dataset.formGroup,group.dataset.formPosition);
  });
 };
 const buildBeforeFullForms=buildGraph;
 buildGraph=function(width,height){
- if(!state.fullFormFocus)return buildBeforeFullForms(width,height);
+ if(!state.fullFormFocus){
+  const graph=buildBeforeFullForms(width,height);
+  if(state.focus && state.lyFam){
+   // 查词图改用全量词群索引，不再依赖旧展示词群子集。
+   const oldIds=new Set(graph.nodes.filter(n=>n.familyIndex!==undefined).map(n=>n.id));
+   graph.nodes=graph.nodes.filter(n=>!oldIds.has(n.id));graph.edges=graph.edges.filter(e=>!oldIds.has(e.source)&&!oldIds.has(e.target));
+   const word=state.focus.word;
+   for(const group of fullFormWordIndex.get(word)||[]){
+    const member=group.members.find(m=>m[0]===word);
+    for(const position of ['词首','词尾']){
+     if(!member[1].includes(position))continue;
+     const id='fullform:'+group.id+':'+position;
+     graph.nodes.push({id,name:group.form+' · '+(position==='词首'?'前位':'后位'),fullFormGroup:group.id,fullFormPosition:position,
+      symbol:'roundRect',symbolSize:[Math.max(78,group.form.length*16+55),34],category:1,
+      itemStyle:{color:'#6b3c93',borderColor:'#c084fc',borderWidth:2},label:{show:true,fontSize:12,color:'#f3e8ff'}});
+     graph.edges.push({source:id,target:'w:'+word,fullFormGroup:group.id,fullFormPosition:position,edgeLabel:formPositionLabel(position),
+      lineStyle:{color:'#c084fc',width:2},label:{show:true,formatter:formPositionLabel(position),fontSize:10,color:'#e9d5ff'}});
+    }
+   }
+  }
+  return graph;
+ }
  const g=fullFormIndex.get(state.fullFormFocus),members=currentFormMembers().slice(formMemberPage*FORM_MEMBER_PAGE_SIZE,(formMemberPage+1)*FORM_MEMBER_PAGE_SIZE);
  const cx=Math.max(180,(width-(width>850?430:0))/2),cy=height/2;
  const nodes=[{id:'fullform:'+g.id,name:g.form,fullFormGroup:g.id,symbol:'roundRect',symbolSize:[Math.max(60,g.form.length*24),46],x:cx,y:cy,fixed:true,itemStyle:{color:'#a855f7'},label:{show:true,fontSize:17,color:'#fff'}}],edges=[];
@@ -79,12 +101,12 @@ showDetail=function(word,...args){
  detailBeforeFullForms(word,...args);
  const groups=fullFormWordIndex.get(word)||[];if(!groups.length)return;
  const block=document.createElement('section');block.className='relblock';
- block.innerHTML='<h3>形式层 · 同素词群（'+groups.length+'组）</h3>'+groups.map(g=>{const member=g.members.find(m=>m[0]===word);return '<button data-form-group="'+escapeHtml(g.id)+'" style="margin:3px">'+escapeHtml(g.form)+' · '+escapeHtml(member[1])+'</button>';}).join('');document.getElementById('detailBody').appendChild(block);
+ block.innerHTML='<h3>形式层 · 同素词群（'+groups.length+'组）</h3>'+groups.map(g=>{const member=g.members.find(m=>m[0]===word);return '<button data-form-group="'+escapeHtml(g.id)+'" data-form-position="'+(member[1].includes('词首')?'词首':member[1].includes('词尾')?'词尾':'全部')+'" style="margin:3px">'+escapeHtml(g.form)+' · '+escapeHtml(member[1])+'</button>';}).join('');document.getElementById('detailBody').appendChild(block);
 };
 const statsBeforeFullForms=updateStats;
 updateStats=function(n,e){statsBeforeFullForms(n,e);document.getElementById('stats').insertAdjacentHTML('beforeend','<span class="stat"><b>'+FULL_FORM_GROUPS.records.length+'</b>全量成分词群</span>');};
 const initBeforeFullForms=init;
-init=function(){initBeforeFullForms();chart.on('click',event=>{if(event.data.fullFormGroup){state.fullFormFocus=event.data.fullFormGroup;showFullFormGroup();}});};
+init=function(){initBeforeFullForms();chart.on('click',event=>{if(event.data.fullFormGroup)focusFullFormGroup(event.data.fullFormGroup,event.data.fullFormPosition);});};
 const renderBeforeFullForms=render;
 render=function(){
  renderBeforeFullForms();
