@@ -176,14 +176,14 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
   <div class="stats" id="stats"></div>
 </header>
 <div class="layout">
-  <aside><details class="relation-group"><summary>形式层 · 同素</summary>    <div class="sec">
+  <aside><details class="relation-group"><summary>形式层 · 共享词形成分</summary>    <div class="sec">
 <label class="chk"><input type="checkbox" id="lyFam" checked><span class="sw" style="background:var(--amber)"></span>显示词群连接</label><label class="chk"><input type="checkbox" id="lyCand" checked><span class="sw" style="background:#c084fc"></span>显示共同成分</label>
       <div class="cand-tabs">
-        <button class="cand-tab on" id="candTabFront">共同词首（前位 30）</button>
-        <button class="cand-tab" id="candTabBack">共同词尾（后位 30）</button>
+        <button class="cand-tab on" id="candTabFront">单字成分</button>
+        <button class="cand-tab" id="candTabBack">双字成分</button>
       </div>
-      <div class="cand-list" id="candList"></div>
-      <div class="note" style="margin-top:6px">按共同词首、词尾组织词群；点击成分查看成员词及教材用例。同组词语是否共享同一语素，需结合词义核对。</div>
+      <input id="formSearch" aria-label="检索成分或成员词" placeholder="检索成分或成员词，如电、原子" style="width:100%;padding:6px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:5px"><select id="formPosition" aria-label="成分位置"><option>全部</option><option>词首</option><option>词尾</option><option>词中</option></select><p class="note" id="formSummary"></p><div class="cand-list" id="candList"></div><div class="row"><button id="formPrev">上一页</button><span id="formPageLabel"></span><button id="formNext">下一页</button></div>
+      <div class="note" style="margin-top:6px">完整单字、双字成分词群，可按位置检索；点击成分展开全部成员词及教材用例。同组词语是否共享同一语素，需结合词义核对。</div>
     </div>
 </details>
 <details class="relation-group"><summary>意义层 · 近义、反义</summary><div class="sec"><h3>近义</h3><p class="note">按《同义词词林（扩展版）》的同义词段查询。</p>
@@ -254,7 +254,7 @@ button:hover{border-color:var(--cyan);color:var(--cyan)}
       <div class="note" style="margin-top:6px">实线为编制例证，虚线为搭配记录。全量清单可检索、翻页；图面每次最多补充150条搭配连线，查词时补充50条。长结构用方形节点展示，连线连接其固定成分；点击可查看完整形式、原句及核查状态。</div>
       <div class="legend-line"><i style="border-color:rgba(100,116,139,.55)"></i>共现边：前词 → 后词（句内相邻）</div>
       <div class="legend-line"><i style="border-color:#fb7185;border-top-style:dashed"></i>反义：无向关联，点击查看教材证据和来源</div>
-      <div class="legend-line"><span class="dot" style="background:#c084fc"></span>◆ 词形观察：60 项共同词首/词尾形式（人工观察，非词缀）</div>
+      <div class="legend-line"><span class="dot" style="background:#c084fc"></span>◆ 成分词群：单字、双字及其词形位置</div>
     </div>
     <div class="sec note">
       操作：拖拽节点可移位；滚轮缩放；拖拽空白平移。点击<b style="color:var(--amber)">词群节点</b>展开/收起成员词；点击<b style="color:var(--cyan)">主题节点</b>切换该主题筛选；点击<b style="color:var(--blue)">词节点</b>查看详情（释义、出处、例句）。
@@ -521,7 +521,6 @@ function updateStats(n, e){
     `<span class="stat"><b>${DATA.families.length}</b>词形组</span>` +
     `<span class="stat"><b>${DATA.collocations.length}</b>原有搭配展示</span>` +
     `<span class="stat"><b>${DATA.cooccurrences.length}</b>有向共现边</span>` +
-    `<span class="stat"><b style="color:#c084fc">${DATA.candidates.length}</b>词形观察</span>` +
     `<span class="stat">当前显示 <b style="color:var(--amber)">${n}</b> 节点 / <b style="color:var(--amber)">${e}</b> 边</span>`;
 }
 
@@ -601,7 +600,7 @@ function showDetail(w, withRel){
   if(DATA.legacyDefinitions[w]) html += `<details class="kv"><summary>旧站释义附注（来源待核）</summary>${escapeHtml(DATA.legacyDefinitions[w])}</details>`;
   if(withRel) html += relBlockHtml(w);   // 检索模式：关系清单置顶
   html += `<div class="kv"><b>主题</b><div class="body">${r[6].split('；').filter(Boolean).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'—'}</div></div>
-    <div class="kv"><b>同素词群</b><div class="body">${escapeHtml(r[7]||'—')}</div></div>
+    <div class="kv"><b>共享词形成分</b><div class="body">${escapeHtml(r[7]||'—')}</div></div>
     <div class="kv"><b>搭配示例</b><div class="body">${escapeHtml(r[8]||'—')}</div></div>
     <div class="kv"><b>例句出处</b><div class="body" style="font-size:11.5px">${escapeHtml(r[9]||'—')}</div></div>`;
   if(sents.length){
@@ -1007,6 +1006,8 @@ window.addEventListener('resize', () => { if(chart) chart.resize(); });
 <script src="boundary-sync.js?v=layers-20261127"></script>
 <script src="antonym-data.js?v=20261126"></script>
 <script src="antonym-ui.js?v=20261126-labels"></script>
+<script src="full-form-groups.js?v=full-forms-20261127"></script>
+<script src="full-form-ui.js?v=full-forms-20261127"></script>
 <script>boot();
 </script>
 </body>
