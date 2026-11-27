@@ -1,0 +1,44 @@
+/* 浅色外观；不改变布局、功能及数据。 */
+:root{--bg:#f5f7fa;--panel:#ffffff;--panel2:#edf2f7;--line:#d9e2ec;--text:#25364b;--dim:#60758a;--cyan:#347b89;--blue:#7298c3;--amber:#967337;--orange:#b68151;--teal:#4d8a83;--red:#b96770;--green:#51856c;--sky:#6285ae;--yellow:#9e8850}
+body{background:#f5f7fa;color:#25364b;color-scheme:light}
+header{background:#fff;border-bottom-color:#d9e2ec}
+h1{color:#243d58}aside{background:#fff}
+main,#chart{background:#f5f7fa}
+#detail{background:rgba(255,255,255,.98);border-color:#d9e2ec;box-shadow:0 6px 24px rgba(41,66,93,.1)}
+#detail h2{color:#274c73}#detail h2 .py{color:#557a8b}
+#detail .sent,.sent{background:#eef3f8;color:#344c63!important;border-left-color:#89aabd}
+#detail small,small{color:#61758a}
+.kv b{color:#52738e}.note{background:#eef3f7;color:#5b7186}
+.tag{background:#f0f4f8;color:#4f687f;border-color:#d5e0eb}
+.stat{background:#f3f6fa;border-color:#dbe4ee;color:#62788d}.stat b{color:#32658a!important}
+button,select,input{color:#304c67}
+button:hover{background:#e9f0f7;border-color:#84a6c3;color:#315f85}
+#kwSearch{background:#f3f6fa;color:#2d4660;border-color:#ccd9e5}#kwSearch::placeholder{color:#899bad}
+.suggest{background:#fff;border-color:#d6e0e9;box-shadow:0 6px 20px rgba(47,69,91,.1)}.suggest .it b{color:#2c4762}.suggest .it .meta{color:#768b9f}
+.relation-group{background:#f8fafc;border-color:#dce5ee}.relation-group>summary{color:#3e698a}
+.cand-tab{background:#f0f3f8;color:#61768c;border-color:#d8e2ec}.cand-tab.on{background:#eee9f6;border-color:#a899bf;color:#70588d}
+.cand-item b,.cand-item .mk{color:#75608e}.cand-item .n{color:#7c8796}
+.path-item b,.relit{color:#355675}.path-item .meta,.path-item .no,.path-empty{color:#73879a}
+.recit{color:#70588d}.recwhy{color:#718298}.reclab{color:#70588d;border-color:#b8a8ca}
+.cilin-item{border-color:#d9e3ec}.cilin-item button{color:#527f75}.cilin-foot{color:#6e8295}.cilin-item summary{color:#5c7389}
+.antonym-item button,.antonym-results h3,.antonym-results a{color:#aa626e}
+#hint{background:rgba(255,255,255,.95);color:#5e7488;border-color:#d9e2ec}
+#toast{background:#fff0ee;color:#9b4f45;border-color:#e6beb7}
+[style*="color:#47607d"],[style*="color: #47607d"],[style*="color:#8aa3bd"]{color:#6a8196!important}
+[style*="color:#e9d5ff"],[style*="color:#c084fc"]{color:#79608f!important}
+[style*="color:#fda4af"]{color:#aa626e!important}
+
+/* 深色文字，提高浅色背景上的阅读对比度。 */
+:root{--text:#1e293b;--dim:#475569}
+body{color:#1e293b}h1,#detail h2{color:#172b42}
+#detail .sent,.sent{color:#273548!important}
+#detail small,small,.note,.cilin-foot,.cilin-item summary{color:#475569!important}
+.kv b,.relation-group>summary{color:#263e56}
+.tag,.stat,button,select,input,#kwSearch,.path-item b,.relit{color:#334155}
+.cand-item .n,.path-item .meta,.path-item .no,.path-empty,.recwhy,.suggest .it .meta{color:#526174}
+#kwSearch::placeholder{color:#64748b}
+.cand-item b,.cand-item .mk,.cand-tab.on,.recit,.reclab{color:#59416f}
+.cilin-item button{color:#305c50}.antonym-item button,.antonym-results h3,.antonym-results a{color:#8b3e4b}
+[style*="color:#47607d"],[style*="color: #47607d"],[style*="color:#8aa3bd"]{color:#475569!important}
+[style*="color:#e9d5ff"],[style*="color:#c084fc"]{color:#59416f!important}
+[style*="color:#fda4af"]{color:#8b3e4b!important}
